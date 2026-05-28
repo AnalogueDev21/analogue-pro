@@ -22,6 +22,42 @@ const EMPTY_FORM = {
   probation_end_date: '', status: 'active',
 }
 
+const EMPLOYEE_SELECT = `
+  id,
+  user_id,
+  company_id,
+  branch_id,
+  department_id,
+  position_id,
+  role_id,
+  manager_id,
+  employee_code,
+  first_name,
+  last_name,
+  first_name_en,
+  last_name_en,
+  email,
+  phone,
+  gender,
+  date_of_birth,
+  national_id,
+  employment_type,
+  hire_date,
+  probation_end_date,
+  termination_date,
+  avatar_url,
+  status,
+  pin_set,
+  last_login_at,
+  created_at,
+  updated_at,
+  branches(id,name,name_en,code),
+  departments(id,name,name_en),
+  positions(id,name,name_en,level),
+  roles(id,name,level),
+  manager:manager_id(id,first_name,last_name)
+`
+
 export default function EmployeesPage({ onViewDetail }) {
   const { t, i18n } = useTranslation()
   const { company, employee, can } = useAuthStore()
@@ -130,9 +166,8 @@ export default function EmployeesPage({ onViewDetail }) {
         manager_id: form.manager_id||null, probation_end_date: form.probation_end_date||null,
         date_of_birth: form.date_of_birth||null,
       }
-      const sel = '*, branches(id,name,name_en,code), departments(id,name,name_en), positions(id,name,name_en,level), roles(id,name,level), manager:manager_id(id,first_name,last_name)'
       if (editItem) {
-        const { data, error } = await supabase.from('employees').update(payload).eq('id', editItem.id).select(sel).single()
+        const { data, error } = await supabase.from('employees').update(payload).eq('id', editItem.id).select(EMPLOYEE_SELECT).single()
         if (error) throw error
         setEmployees(p => p.map(x => x.id === data.id ? data : x))
         await writeActivityLog({
@@ -153,7 +188,7 @@ export default function EmployeesPage({ onViewDetail }) {
         })
         toast(choose(i18n, 'แก้ไขสำเร็จ ✓', 'Updated ✓'))
       } else {
-        const { data, error } = await supabase.from('employees').insert(payload).select(sel).single()
+        const { data, error } = await supabase.from('employees').insert(payload).select(EMPLOYEE_SELECT).single()
         if (error) throw error
         setEmployees(p => [...p, data])
         await writeActivityLog({
@@ -175,8 +210,7 @@ export default function EmployeesPage({ onViewDetail }) {
   const handleStatusChange = async () => {
     if (!confirmAction) return
     try {
-      const sel = '*, branches(id,name,name_en,code), departments(id,name,name_en), positions(id,name,name_en,level), roles(id,name,level)'
-      const { data, error } = await supabase.from('employees').update({ status: confirmAction.newStatus }).eq('id', confirmAction.id).select(sel).single()
+      const { data, error } = await supabase.from('employees').update({ status: confirmAction.newStatus }).eq('id', confirmAction.id).select(EMPLOYEE_SELECT).single()
       if (error) throw error
       setEmployees(p => p.map(x => x.id === data.id ? data : x))
       await writeActivityLog({

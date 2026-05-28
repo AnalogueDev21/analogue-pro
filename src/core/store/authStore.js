@@ -2,6 +2,7 @@
 import { create } from 'zustand'
 import { supabase } from '@/services/supabase'
 import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
+import { setEmployeePin, verifyEmployeePin } from '@/features/auth/services/pinService'
 import i18n from '@/locales/i18n'
 
 export const useAuthStore = create((set, get) => ({
@@ -34,7 +35,27 @@ export const useAuthStore = create((set, get) => ({
       const { data: emp, error } = await supabase
         .from('employees')
         .select(`
-          *,
+          id,
+          user_id,
+          company_id,
+          branch_id,
+          department_id,
+          position_id,
+          role_id,
+          manager_id,
+          employee_code,
+          first_name,
+          last_name,
+          first_name_en,
+          last_name_en,
+          email,
+          phone,
+          avatar_url,
+          status,
+          pin_set,
+          last_login_at,
+          created_at,
+          updated_at,
           companies(*),
           branches(id, name, name_en, code),
           departments(id, name, name_en),
@@ -122,19 +143,16 @@ export const useAuthStore = create((set, get) => ({
   verifyPin: async (pin) => {
     const { employee } = get()
     if (!employee) return false
-    if (employee.pin !== pin) return false
+    const ok = await verifyEmployeePin(pin)
+    if (!ok) return false
     set({ screen: 'app' })
     return true
   },
 
   setupPin: async (pin) => {
     const { employee } = get()
-    const { error } = await supabase
-      .from('employees')
-      .update({ pin, pin_set: true })
-      .eq('id', employee.id)
-    if (error) throw error
-    set({ employee: { ...employee, pin, pin_set: true }, screen: 'pin' })
+    await setEmployeePin(pin)
+    set({ employee: { ...employee, pin_set: true }, screen: 'pin' })
   },
 
   // ── Helpers ────────────────────────────────────────────────────

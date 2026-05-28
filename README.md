@@ -197,6 +197,8 @@ values (
 
 ## Roadmap
 
+See [System Roadmap](docs/system-roadmap.md) for the next architecture and feature build plan.
+
 ### ✅ Week 1 — Foundation (Done)
 - [x] Database Schema + RLS
 - [x] Auth + PIN Authentication

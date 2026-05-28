@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { updateEmployee, uploadAvatar } from '@/services/employeeService'
+import { setEmployeePin } from '@/features/auth/services/pinService'
 import { Button, Card, Field, Input, PageHeader, useToast } from '@/components/ui/index.jsx'
 
 export default function SettingsPage() {
@@ -43,7 +44,7 @@ export default function SettingsPage() {
     }
     setSaving(true)
     try {
-      await updateEmployee(employee.id, { pin, pin_set: true })
+      await setEmployeePin(pin)
       await refreshEmployee()
       setPin('')
       toast(t('settingsPage.pinSaved'))
