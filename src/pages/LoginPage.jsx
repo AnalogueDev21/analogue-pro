@@ -3,6 +3,18 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 
+const DEMO_PASSWORD = 'TestUser@2026'
+const DEMO_PIN = '1234'
+const DEMO_ACCOUNTS = [
+  { role: 'Super Admin', email: 'super.admin@analogue-pro.local' },
+  { role: 'Company Admin', email: 'company.admin@analogue-pro.local' },
+  { role: 'HR Manager', email: 'hr.manager@analogue-pro.local' },
+  { role: 'Finance / HR Staff', email: 'finance.hr.staff@analogue-pro.local' },
+  { role: 'Manager', email: 'manager@analogue-pro.local' },
+  { role: 'Supervisor', email: 'supervisor@analogue-pro.local' },
+  { role: 'Employee', email: 'employee@analogue-pro.local' },
+]
+
 export default function LoginPage() {
   const { t, i18n } = useTranslation()
   const { login, loginWithMicrosoft } = useAuthStore()
@@ -11,6 +23,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [microsoftLoading, setMicrosoftLoading] = useState(false)
   const [error, setError] = useState('')
+  const [copiedRole, setCopiedRole] = useState('')
 
   const submit = async (e) => {
     e.preventDefault()
@@ -41,6 +54,27 @@ export default function LoginPage() {
     const next = i18n.language === 'th' ? 'en' : 'th'
     localStorage.setItem('ap_lang', next)
     i18n.changeLanguage(next)
+  }
+
+  const useDemoAccount = (account) => {
+    setError('')
+    setForm({ email: account.email, password: DEMO_PASSWORD })
+  }
+
+  const copyDemoAccount = async (account) => {
+    const text = [
+      `${account.role}`,
+      `Email: ${account.email}`,
+      `Password: ${DEMO_PASSWORD}`,
+      `PIN: ${DEMO_PIN}`,
+    ].join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedRole(account.role)
+      setTimeout(() => setCopiedRole(''), 1600)
+    } catch {
+      setError(text)
+    }
   }
 
   return (
@@ -211,6 +245,44 @@ export default function LoginPage() {
               </>
             )}
           </button>
+
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-white overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-slate-800">Demo Accounts</p>
+                <p className="text-xs text-slate-400">Password: {DEMO_PASSWORD} · PIN: {DEMO_PIN}</p>
+              </div>
+              {copiedRole && (
+                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                  Copied
+                </span>
+              )}
+            </div>
+            <div className="max-h-56 overflow-y-auto divide-y divide-slate-50">
+              {DEMO_ACCOUNTS.map(account => (
+                <div key={account.email} className="px-4 py-3 flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-700 truncate">{account.role}</p>
+                    <p className="text-xs text-slate-400 truncate">{account.email}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => useDemoAccount(account)}
+                    className="px-2.5 py-1.5 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+                  >
+                    Use
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => copyDemoAccount(account)}
+                    className="px-2.5 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  >
+                    Copy
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <p className="text-center text-xs text-slate-400 mt-8">
             {t('app.name')} · Enterprise HR Platform
