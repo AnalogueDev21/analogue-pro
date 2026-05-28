@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { getCompanyPayslips, getMyPayslips, publishPayslip, calcNetSalary } from '@/services/payrollService'
-import { Badge, Button, Card, EmptyState, PageHeader, Select, Skeleton, Table, useToast } from '@/components/ui/index.jsx'
+import { Badge, Button, Card, EmptyState, MobileListCard, PageHeader, Select, Skeleton, Table, useToast } from '@/components/ui/index.jsx'
 import { PayrollImportPanel, exportPayrollRows, exportSinglePayslip } from '@/features/payroll'
 import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
 import { usePersistedState } from '@/hooks/usePersistedState'
@@ -139,6 +139,37 @@ export default function PayrollPage({ initialTab = 'my' }) {
             ...(tab === 'all' ? [{ label: t('payroll.manageAction'), align: 'right' }] : []),
           ]}
           empty={rows.length === 0 && <EmptyState icon="💰" title={t('payroll.noData')} subtitle={t('payroll.noDataSub')} />}
+          mobileCards={rows.map(row => {
+            const gross = Number(row.base_salary || 0) + Number(row.ot_amount || 0) + Number(row.allowance || 0) + Number(row.bonus || 0)
+            const deducted = Number(row.deduction || 0) + Number(row.tax || 0) + Number(row.social_security || 0)
+            const net = row.net_salary ?? calcNetSalary(row)
+            return (
+              <MobileListCard
+                key={row.id}
+                title={tab === 'my' ? row.period_month : `${row.employees?.first_name || ''} ${row.employees?.last_name || ''}`.trim()}
+                subtitle={tab === 'all' ? row.employees?.employee_code : null}
+                badge={<Badge color={row.is_published ? 'green' : 'amber'}>{row.is_published ? t('common.published') : t('common.draft')}</Badge>}
+                actions={tab === 'all' && (
+                  <>
+                    <button onClick={() => togglePublish(row)} className="px-3 py-2 text-xs text-primary-600 bg-primary-50 rounded-lg font-semibold">
+                      {row.is_published ? t('common.hide') : t('common.publish')}
+                    </button>
+                    {canManage && (
+                      <button onClick={() => exportSinglePayslip({ ...row, net_salary: net })} className="px-3 py-2 text-xs text-emerald-600 bg-emerald-50 rounded-lg font-semibold">
+                        {payrollUi.generatePayslip}
+                      </button>
+                    )}
+                  </>
+                )}
+              >
+                <div className="grid grid-cols-3 gap-2">
+                  <div><p className="text-xs text-slate-400">{t('payroll.grossSalary')}</p><p className="font-semibold text-slate-700">{money(gross)}</p></div>
+                  <div><p className="text-xs text-slate-400">{t('payroll.deductions')}</p><p className="font-semibold text-red-600">{money(deducted)}</p></div>
+                  <div><p className="text-xs text-slate-400">{t('payroll.netSalary')}</p><p className="font-semibold text-emerald-700">{money(net)}</p></div>
+                </div>
+              </MobileListCard>
+            )
+          })}
         >
           {rows.map(row => {
             const gross = Number(row.base_salary || 0) + Number(row.ot_amount || 0) + Number(row.allowance || 0) + Number(row.bonus || 0)

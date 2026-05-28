@@ -1,4 +1,4 @@
-import { Badge, EmptyState, Skeleton, Table } from '@/components/ui/index.jsx'
+import { Badge, EmptyState, MobileListCard, Skeleton, Table } from '@/components/ui/index.jsx'
 
 export default function ActivityLogsTable({ logs, loading, emptyTitle }) {
   if (loading) {
@@ -15,6 +15,18 @@ export default function ActivityLogsTable({ logs, loading, emptyTitle }) {
         { label: 'Description' },
       ]}
       empty={logs.length === 0 && <EmptyState icon="🧾" title={emptyTitle} />}
+      mobileCards={logs.map(log => (
+        <MobileListCard
+          key={log.id}
+          title={log.action || 'activity'}
+          subtitle={log.actor ? `${log.actor.first_name || ''} ${log.actor.last_name || ''}`.trim() : 'System'}
+          meta={log.created_at ? new Date(log.created_at).toLocaleString('th-TH') : '-'}
+          badge={<Badge color="blue">{log.target_type || log.module || '-'}</Badge>}
+        >
+          <p className="text-sm text-slate-600">{log.description || '-'}</p>
+          {log.target_id && <p className="text-xs text-slate-400 mt-1">{log.target_id}</p>}
+        </MobileListCard>
+      ))}
     >
       {logs.map(log => (
         <tr key={log.id} className="border-b border-slate-50 align-top">

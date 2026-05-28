@@ -76,16 +76,16 @@ export default function CompanyPage() {
         action={
           !edit
             ? <Button icon="✏️" onClick={() => setEdit(true)}>{t('common.edit')}</Button>
-            : <div className="flex gap-2">
+            : <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="secondary" onClick={() => { setEdit(false); setForm(data) }}>{t('common.cancel')}</Button>
                 <Button loading={saving} onClick={save}>{t('common.save')}</Button>
               </div>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* Stats */}
-        <div className="lg:col-span-3 grid grid-cols-3 gap-4">
+        <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {[
             { label: t('nav.branches'), value: stats.branches, icon: '🏬', color: 'text-primary-700' },
             { label: t('nav.departments'), value: stats.departments, icon: '🗂', color: 'text-emerald-700' },
@@ -93,7 +93,7 @@ export default function CompanyPage() {
           ].map(s => (
             <Card key={s.label} className="text-center">
               <p className="text-2xl mb-1">{s.icon}</p>
-              <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+              <p className={`text-2xl sm:text-3xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-sm text-slate-500 mt-1">{s.label}</p>
             </Card>
           ))}
@@ -101,7 +101,7 @@ export default function CompanyPage() {
 
         {/* Company Logo */}
         <Card className="flex flex-col items-center text-center">
-          <div className="w-24 h-24 bg-primary-100 rounded-3xl flex items-center justify-center text-primary-700 text-4xl font-bold mb-4">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-primary-100 rounded-3xl flex items-center justify-center text-primary-700 text-3xl sm:text-4xl font-bold mb-4">
             {fieldName(i18n, data)?.[0]}
           </div>
           <p className="font-bold text-slate-800 text-lg">{fieldName(i18n, data)}</p>
@@ -148,9 +148,9 @@ export default function CompanyPage() {
                 [t('org.company.website'), data?.website],
                 [t('org.company.address'), data?.address],
               ].map(([label, value]) => (
-                <div key={label} className="flex gap-4 py-3 border-b border-slate-50 last:border-0">
-                  <p className="text-sm text-slate-400 w-48 flex-shrink-0">{label}</p>
-                  <p className="text-sm text-slate-800 font-medium">{value || '—'}</p>
+                <div key={label} className="flex flex-col sm:flex-row gap-1 sm:gap-4 py-3 border-b border-slate-50 last:border-0">
+                  <p className="text-sm text-slate-400 sm:w-48 flex-shrink-0">{label}</p>
+                  <p className="text-sm text-slate-800 font-medium break-words">{value || '—'}</p>
                 </div>
               ))}
             </div>

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { supabase } from '@/services/supabase'
 import {
-  Card, PageHeader, Field, Input, Button, Badge, Select,
+  Card, PageHeader, Field, Input, Button, Badge, Select, MobileListCard,
   Modal, ConfirmDialog, EmptyState, SearchInput, Toggle, useToast, Skeleton, Table
 } from '@/components/ui/index.jsx'
 import { choose, fieldName } from '@/utils/lang'
@@ -130,6 +130,23 @@ export default function PositionsPage() {
             ? <EmptyState icon="🎯" title={choose(i18n, 'ยังไม่มีตำแหน่ง', 'No positions yet')} subtitle={choose(i18n, 'กด + เพิ่มตำแหน่ง เพื่อเริ่มต้น', 'Click + Add Position to get started')} />
             : null
           }
+          mobileCards={filtered.map(p => (
+            <MobileListCard
+              key={p.id}
+              title={fieldName(i18n, p)}
+              subtitle={i18n.language !== 'en' && p.name_en ? p.name_en : null}
+              meta={fieldName(i18n, p.departments) || '—'}
+              badge={<Badge color={p.is_active ? 'green' : 'gray'}>{p.is_active ? t('common.active') : t('common.inactive')}</Badge>}
+              actions={
+                <>
+                  <button onClick={() => openEdit(p)} className="px-3 py-2 text-xs text-primary-600 bg-primary-50 rounded-lg font-semibold">{t('common.edit')}</button>
+                  <button onClick={() => setDeleteId(p.id)} className="px-3 py-2 text-xs text-red-500 bg-red-50 rounded-lg font-semibold">{t('common.delete')}</button>
+                </>
+              }
+            >
+              <Badge color={levelColor(p.level)}>L{p.level}</Badge>
+            </MobileListCard>
+          ))}
         >
           {filtered.map(p => (
             <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
@@ -158,7 +175,7 @@ export default function PositionsPage() {
       {showForm && (
         <Modal title={editItem ? choose(i18n, 'แก้ไขตำแหน่ง', 'Edit Position') : t('org.position.add')} onClose={() => setShowForm(false)}>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label={t('org.position.name')} required error={errors.name}>
                 <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder={choose(i18n, 'ผู้จัดการ', 'Manager')} error={errors.name} />
               </Field>

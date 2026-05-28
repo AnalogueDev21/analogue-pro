@@ -135,24 +135,24 @@ export default function DepartmentsPage() {
             <div className="space-y-2">
               {filtered.map(d => (
                 <div key={d.id}
-                  className={`bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between gap-4 hover:shadow-sm transition-shadow ${d.parent_id ? 'ml-8 border-l-4 border-l-slate-200' : ''}`}>
-                  <div className="flex items-center gap-3">
+                  className={`bg-white rounded-xl sm:rounded-2xl border border-slate-100 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-shadow ${d.parent_id ? 'sm:ml-8 border-l-4 border-l-slate-200' : ''}`}>
+                  <div className="flex items-start sm:items-center gap-3 min-w-0">
                     <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 text-lg">
                       🗂
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-slate-800 text-sm">{fieldName(i18n, d)}</p>
                         {d.code && <span className="font-mono text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{d.code}</span>}
                       </div>
-                      <div className="flex items-center gap-3 mt-0.5">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
                         {i18n.language !== 'en' && d.name_en && <p className="text-xs text-slate-400">{d.name_en}</p>}
                         {d.branches && <p className="text-xs text-slate-400">📍 {fieldName(i18n, d.branches)}</p>}
                         {d.parent && <p className="text-xs text-slate-400">↳ {fieldName(i18n, d.parent)}</p>}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                     <Badge color={d.is_active ? 'green' : 'gray'}>
                       {d.is_active ? t('common.active') : t('common.inactive')}
                     </Badge>
@@ -174,7 +174,7 @@ export default function DepartmentsPage() {
       {showForm && (
         <Modal title={editItem ? choose(i18n, 'แก้ไขแผนก', 'Edit Department') : t('org.department.add')} onClose={() => setShowForm(false)}>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label={t('org.department.name')} required error={errors.name}>
                 <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                   placeholder={choose(i18n, 'ฝ่ายบุคคล', 'Human Resources')} error={errors.name} />

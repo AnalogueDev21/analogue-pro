@@ -194,24 +194,24 @@ export default function AppShell({ page, setPage, children }) {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-14 bg-white border-b border-slate-100 flex items-center px-4 gap-3 flex-shrink-0">
+        <header className="h-14 bg-white border-b border-slate-100 flex items-center px-3 sm:px-4 gap-2 sm:gap-3 flex-shrink-0">
           <button onClick={() => setSideOpen(true)}
-            className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
+            className="lg:hidden w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center">
             ☰
           </button>
 
           {/* Breadcrumb */}
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-slate-700 capitalize">{t(pageLabelKey, page)}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-700 capitalize truncate">{t(pageLabelKey, page)}</p>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
               title={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
-              className="w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-base flex items-center justify-center"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-sm sm:text-base flex items-center justify-center"
             >
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
@@ -219,7 +219,7 @@ export default function AppShell({ page, setPage, children }) {
               onClick={toggleLang}
               aria-label={t('common.language')}
               title={t('common.language')}
-              className="h-9 px-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-xs font-bold flex items-center gap-1.5"
+              className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-xs font-bold flex items-center gap-1"
             >
               <span>🌐</span>
               {i18n.language === 'th' ? 'TH' : 'EN'}
@@ -227,21 +227,21 @@ export default function AppShell({ page, setPage, children }) {
             {can('notification.view') && (
               <NotificationCenter employee={employee} can={can} onNavigate={setPage} />
             )}
-            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-xs font-bold cursor-pointer">
+            <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-xs font-bold cursor-pointer">
               {employee?.first_name?.[0]}
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-5 lg:p-6 pb-20 lg:pb-6 animate-fade-in">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-8 animate-fade-in">
+          <div className="max-w-md md:max-w-7xl mx-auto">
             {children}
           </div>
         </main>
 
         {/* Mobile bottom nav */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 flex z-20 shadow-lg">
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 flex z-20 shadow-lg pb-[env(safe-area-inset-bottom)]">
           {[
             { id:'dashboard', icon:'▦', key:'nav.dashboard' },
             { id:'employees', icon:'👥', key:'nav.employees' },
@@ -250,11 +250,11 @@ export default function AppShell({ page, setPage, children }) {
             { id:'settings',  icon:'⚙️', key:'common.settings'},
           ].map(item => (
             <button key={item.id} onClick={() => setPage(item.id)}
-              className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
-                page === item.id ? 'text-primary-700' : 'text-slate-400'
+              className={`relative flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+                page === item.id ? 'text-primary-700 bg-primary-50' : 'text-slate-400'
               }`}>
-              <span className="text-lg">{item.icon}</span>
-              <span className="text-xs font-medium">{t(item.key)}</span>
+              <span className="text-lg leading-none w-6 h-6 flex items-center justify-center">{item.icon}</span>
+              <span className="text-[11px] leading-tight font-semibold">{t(item.key)}</span>
               {page === item.id && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-700 rounded-full" />
               )}

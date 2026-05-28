@@ -19,7 +19,7 @@ export default function NotificationCenter({ employee, can, onNavigate }) {
     <div className="relative">
       <button
         onClick={openPanel}
-        className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-lg"
+        className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-sm sm:text-lg flex items-center justify-center"
         aria-label={t('common.notification')}
       >
         🔔

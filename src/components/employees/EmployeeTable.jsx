@@ -1,6 +1,6 @@
 // src/components/employees/EmployeeTable.jsx
 import { useTranslation } from 'react-i18next'
-import { Badge, Card, EmptyState, StatusBadge, Table } from '@/components/ui/index.jsx'
+import { Badge, Card, EmptyState, MobileListCard, StatusBadge, Table } from '@/components/ui/index.jsx'
 import { choose, fieldName } from '@/utils/lang'
 
 export default function EmployeeTable({ employees, loading, onView, onEdit, onStatusChange, canEdit, t }) {
@@ -22,6 +22,37 @@ export default function EmployeeTable({ employees, loading, onView, onEdit, onSt
           ? <EmptyState icon="👥" title={choose(i18n, 'ไม่พบพนักงาน', 'No employees found')} />
           : null
         }
+        mobileCards={employees.map(emp => (
+          <MobileListCard
+            key={emp.id}
+            title={`${emp.first_name || ''} ${emp.last_name || ''}`.trim()}
+            subtitle={emp.email}
+            meta={`${emp.employee_code} · ${fieldName(i18n, emp.branches) || '—'}`}
+            badge={<StatusBadge status={emp.status} />}
+            actions={
+              <>
+                <button onClick={() => onView(emp.id)} className="px-3 py-2 text-xs text-slate-700 bg-slate-100 rounded-lg font-semibold">
+                  {t('common.view')}
+                </button>
+                {canEdit && (
+                  <>
+                    <button onClick={() => onEdit(emp)} className="px-3 py-2 text-xs text-primary-600 bg-primary-50 rounded-lg font-semibold">
+                      {t('common.edit')}
+                    </button>
+                    <button onClick={() => onStatusChange(emp)} className={`px-3 py-2 text-xs rounded-lg font-semibold ${emp.status === 'active' ? 'text-red-500 bg-red-50' : 'text-emerald-600 bg-emerald-50'}`}>
+                      {emp.status === 'active' ? choose(i18n, 'ระงับ', 'Suspend') : choose(i18n, 'เปิดใช้', 'Activate')}
+                    </button>
+                  </>
+                )}
+              </>
+            }
+          >
+            <div className="flex flex-wrap gap-2">
+              {emp.roles && <Badge color="blue">{emp.roles.name}</Badge>}
+              <span className="text-xs text-slate-500">{fieldName(i18n, emp.positions) || '—'} / {fieldName(i18n, emp.departments) || '—'}</span>
+            </div>
+          </MobileListCard>
+        ))}
       >
         {employees.map(emp => (
           <tr key={emp.id}

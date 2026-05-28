@@ -38,17 +38,17 @@ export function Modal({ title, onClose, children, size = 'md' }) {
   const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 sm:p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={`w-full ${sizes[size]} bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <div className={`w-full ${sizes[size]} bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in max-h-[92vh] flex flex-col`}>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 flex-shrink-0">
           <h3 className="font-semibold text-slate-800">{title}</h3>
           <button onClick={onClose}
             className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex items-center justify-center transition-colors text-lg">
             ×
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6 overflow-y-auto">{children}</div>
       </div>
     </div>
   )
@@ -67,12 +67,12 @@ export function Drawer({ title, onClose, children, size = 'md' }) {
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={`w-full ${sizes[size]} bg-white h-full shadow-xl flex flex-col animate-slide-in`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 flex-shrink-0">
           <h3 className="font-semibold text-slate-800">{title}</h3>
           <button onClick={onClose}
             className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 flex items-center justify-center text-lg">×</button>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
       </div>
     </div>
   )
@@ -83,19 +83,19 @@ export function ConfirmDialog({ title, message, onConfirm, onCancel, danger }) {
   const { t } = useTranslation()
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-4 sm:p-6 animate-fade-in">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4 ${danger ? 'bg-red-100' : 'bg-amber-100'}`}>
           {danger ? '🗑' : '⚠️'}
         </div>
         <h3 className="font-bold text-slate-800 mb-2">{title}</h3>
         <p className="text-sm text-slate-500 mb-6">{message}</p>
-        <div className="flex gap-3">
+      <div className="flex gap-3">
           <button onClick={onCancel}
-            className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+            className="flex-1 min-h-11 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-colors">
             {t('common.cancel')}
           </button>
           <button onClick={onConfirm}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-primary-700 hover:bg-primary-800'}`}>
+            className={`flex-1 min-h-11 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-primary-700 hover:bg-primary-800'}`}>
             {t('common.confirm')}
           </button>
         </div>
@@ -125,7 +125,7 @@ export function Field({ label, error, required, children, hint }) {
 export function Input({ error, ...props }) {
   return (
     <input
-      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white text-slate-900 placeholder-slate-400
+      className={`w-full px-3.5 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm bg-white text-slate-900 placeholder-slate-400
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all
         ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
       {...props}
@@ -138,7 +138,7 @@ export function Textarea({ error, rows = 3, ...props }) {
   return (
     <textarea
       rows={rows}
-      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white text-slate-900 placeholder-slate-400
+      className={`w-full px-3.5 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm bg-white text-slate-900 placeholder-slate-400
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none
         ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
       {...props}
@@ -150,7 +150,7 @@ export function Textarea({ error, rows = 3, ...props }) {
 export function Select({ error, children, ...props }) {
   return (
     <select
-      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white text-slate-900
+      className={`w-full px-3.5 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm bg-white text-slate-900
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all
         ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
       {...props}
@@ -222,9 +222,17 @@ export function Skeleton({ className = 'h-4' }) {
 }
 
 // ── Table ──────────────────────────────────────────────────────────
-export function Table({ headers, children, loading, empty }) {
+export function Table({ headers, children, loading, empty, mobileCards }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+    {mobileCards && (
+      <div className="md:hidden divide-y divide-slate-100">
+        {loading
+          ? <div className="p-3 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" />)}</div>
+          : mobileCards}
+      </div>
+    )}
+    <div className={`overflow-x-auto ${mobileCards ? 'hidden md:block' : ''}`}>
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-100">
@@ -248,20 +256,21 @@ export function Table({ headers, children, loading, empty }) {
           }
         </tbody>
       </table>
-      {!loading && empty}
     </div>
+    {!loading && empty}
+    </>
   )
 }
 
 // ── Page Header ────────────────────────────────────────────────────
 export function PageHeader({ title, subtitle, action }) {
   return (
-    <div className="flex items-start justify-between gap-4 mb-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate-800">{title}</h1>
-        {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-xl font-bold text-slate-900 sm:text-slate-800 leading-tight">{title}</h1>
+        {subtitle && <p className="text-sm sm:text-sm text-slate-500 mt-1 sm:mt-0.5">{subtitle}</p>}
       </div>
-      {action && <div className="flex-shrink-0">{action}</div>}
+      {action && <div className="flex-shrink-0 w-full sm:w-auto flex justify-start sm:justify-end">{action}</div>}
     </div>
   )
 }
@@ -275,9 +284,9 @@ export function Button({ children, variant = 'primary', size = 'md', loading, ic
     ghost:     'text-slate-600 hover:bg-slate-100',
   }
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2.5 text-sm',
-    lg: 'px-5 py-3 text-base',
+    sm: 'px-3 py-2 text-xs min-h-10',
+    md: 'px-4 py-3 sm:py-2.5 text-sm min-h-11 sm:min-h-0',
+    lg: 'px-5 py-3 text-base min-h-12',
   }
   return (
     <button
@@ -298,9 +307,45 @@ export function Button({ children, variant = 'primary', size = 'md', loading, ic
 // ── Card ───────────────────────────────────────────────────────────
 export function Card({ children, className = '', padding = true }) {
   return (
-    <div className={`bg-white rounded-2xl border border-slate-100 shadow-sm ${padding ? 'p-6' : ''} ${className}`}>
+    <div className={`bg-white rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm ${padding ? 'p-4 sm:p-6' : ''} ${className}`}>
       {children}
     </div>
+  )
+}
+
+export function ResponsiveCard({ children, className = '' }) {
+  return <Card className={className}>{children}</Card>
+}
+
+export function MobileListCard({ title, subtitle, meta, actions, children, badge }) {
+  return (
+    <div className="p-4 border-b border-slate-100 last:border-b-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-semibold text-slate-800 text-sm truncate">{title}</p>
+          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          {meta && <p className="text-xs text-slate-400 mt-1">{meta}</p>}
+        </div>
+        {badge && <div className="flex-shrink-0">{badge}</div>}
+      </div>
+      {children && <div className="mt-3 text-sm text-slate-600">{children}</div>}
+      {actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
+    </div>
+  )
+}
+
+export function SettingsSection({ title, description, children, action }) {
+  return (
+    <Card>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+          {description && <p className="text-sm text-slate-500 mt-1">{description}</p>}
+        </div>
+        {action && <div className="flex-shrink-0">{action}</div>}
+      </div>
+      {children}
+    </Card>
   )
 }
 
@@ -309,13 +354,13 @@ export function SearchInput({ value, onChange, placeholder }) {
   const { t } = useTranslation()
   return (
     <div className="relative">
-      <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">🔍</span>
+      <span className="absolute left-3.5 top-3 sm:top-2.5 text-slate-400 text-sm">🔍</span>
       <input
         type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder || `${t('common.search')}...`}
-        className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        className="w-full pl-9 pr-4 py-3 sm:py-2.5 border border-slate-200 rounded-xl text-base sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
       />
     </div>
   )

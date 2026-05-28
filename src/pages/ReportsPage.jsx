@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { downloadCsv, getReportSnapshot, toCsv } from '@/services/reportService'
-import { Badge, Button, Card, EmptyState, PageHeader, Skeleton, Table, useToast } from '@/components/ui/index.jsx'
+import { Badge, Button, Card, EmptyState, MobileListCard, PageHeader, Skeleton, Table, useToast } from '@/components/ui/index.jsx'
 import { usePersistedState } from '@/hooks/usePersistedState'
 
 export default function ReportsPage() {
@@ -71,6 +71,14 @@ export default function ReportsPage() {
             <Table
               headers={[{ label: t('reports.category') }, { label: t('reports.count') }, { label: t('reports.note') }]}
               empty={stats.every(s => s.value === 0) && <EmptyState icon="📊" title={t('reports.noData')} />}
+              mobileCards={stats.map(s => (
+                <MobileListCard
+                  key={s.label}
+                  title={s.label}
+                  subtitle={t('reports.sourceNote')}
+                  badge={<Badge color="blue">{loading ? '—' : s.value}</Badge>}
+                />
+              ))}
             >
               {stats.map(s => (
                 <tr key={s.label} className="border-b border-slate-50">
