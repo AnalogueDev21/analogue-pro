@@ -11,6 +11,7 @@ import {
   Modal, EmptyState, useToast, Skeleton
 } from '@/components/ui/index.jsx'
 import { choose, localeOf } from '@/utils/lang'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 const STATUS_COLOR = { pending: 'amber', approved: 'green', rejected: 'red', cancelled: 'gray' }
 const STATUS_LABEL = {
@@ -24,8 +25,9 @@ export default function OTPage() {
   const { show: toast, el: ToastEl } = useToast()
 
   const isManager = can('ot.approve_team') || can('ot.approve_all')
+  const canApproveAll = can('ot.approve_all')
 
-  const [tab, setTab] = useState('my')
+  const [tab, setTab] = usePersistedState('ap_ot_tab', 'my')
   const [myOT, setMyOT] = useState([])
   const [allOT, setAllOT] = useState([])
   const [loading, setLoading] = useState(true)
@@ -33,7 +35,7 @@ export default function OTPage() {
   const [rejectModal, setRejectModal] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
   const [saving, setSaving] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('pending')
+  const [statusFilter, setStatusFilter] = usePersistedState('ap_ot_status_filter', 'pending')
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -53,7 +55,7 @@ export default function OTPage() {
     try {
       const [mine, all] = await Promise.all([
         getMyOT(employee.id),
-        isManager ? getAllOT(employee.company_id) : Promise.resolve([]),
+        isManager ? getAllOT(employee.company_id, canApproveAll ? {} : { branch_id: employee.branch_id }) : Promise.resolve([]),
       ])
       setMyOT(mine)
       setAllOT(all)

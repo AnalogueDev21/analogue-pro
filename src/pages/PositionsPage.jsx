@@ -8,6 +8,7 @@ import {
   Modal, ConfirmDialog, EmptyState, SearchInput, Toggle, useToast, Skeleton, Table
 } from '@/components/ui/index.jsx'
 import { choose, fieldName } from '@/utils/lang'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 const LEVELS = [
   { value: 10, label: 'Level 10 — Employee' },
@@ -28,7 +29,7 @@ export default function PositionsPage() {
   const [positions, setPositions] = useState([])
   const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = usePersistedState('ap_positions_search', '')
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [deleteId, setDeleteId] = useState(null)

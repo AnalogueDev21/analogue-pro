@@ -3,18 +3,31 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { getCompanyPayslips, getMyPayslips, publishPayslip, calcNetSalary } from '@/services/payrollService'
 import { Badge, Button, Card, EmptyState, PageHeader, Select, Skeleton, Table, useToast } from '@/components/ui/index.jsx'
+import { PayrollImportPanel, exportPayrollRows, exportSinglePayslip } from '@/features/payroll'
+import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
-export default function PayrollPage() {
+export default function PayrollPage({ initialTab = 'my' }) {
   const { t, i18n } = useTranslation()
   const { employee, can } = useAuthStore()
   const { show: toast, el: ToastEl } = useToast()
-  const [tab, setTab] = useState('my')
-  const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7))
+  const [tab, setTab] = usePersistedState('ap_payroll_tab', initialTab)
+  const [period, setPeriod] = usePersistedState('ap_payroll_period', new Date().toISOString().slice(0, 7))
   const [myPayslips, setMyPayslips] = useState([])
   const [allPayslips, setAllPayslips] = useState([])
   const [loading, setLoading] = useState(true)
 
   const canManage = can('payroll.manage') || can('payroll.view_all')
+  const canImport = can('payroll.import') || can('payroll.manage')
+  const canExport = can('payroll.export') || can('payroll.manage')
+  const canViewCompanyWide = can('org.manage_company') || can('payroll.manage')
+  const payrollUi = i18n.language === 'en'
+    ? { importTab: 'Import', exportPayroll: 'Export Payroll', generatePayslip: 'Generate Payslip' }
+    : { importTab: 'นำเข้า', exportPayroll: 'ส่งออก Payroll', generatePayslip: 'สร้าง Payslip' }
+
+  useEffect(() => {
+    if (initialTab === 'import') setTab('import')
+  }, [initialTab])
 
   useEffect(() => { load() }, [period])
 
@@ -23,7 +36,7 @@ export default function PayrollPage() {
     try {
       const [mine, all] = await Promise.all([
         getMyPayslips(employee.id),
-        canManage ? getCompanyPayslips(employee.company_id, period) : Promise.resolve([]),
+        canManage ? getCompanyPayslips(employee.company_id, period, canViewCompanyWide ? {} : { branch_id: employee.branch_id }) : Promise.resolve([]),
       ])
       setMyPayslips(mine)
       setAllPayslips(all)
@@ -46,6 +59,24 @@ export default function PayrollPage() {
     }
   }
 
+  const handleImported = () => {
+    setTab('all')
+    load()
+  }
+
+  const handleExport = async () => {
+    await exportPayrollRows(rows, `payroll-${period}.xlsx`)
+    await writeActivityLog({
+      company_id: employee.company_id,
+      actor_employee_id: employee.id,
+      action: 'export_payroll',
+      target_type: 'payroll',
+      target_id: period,
+      description: `Exported payroll for ${period}`,
+      metadata: { rows: rows.length },
+    })
+  }
+
   const rows = tab === 'my' ? myPayslips.filter(p => p.is_published || canManage) : allPayslips
   const totalNet = allPayslips.reduce((sum, row) => sum + Number(row.net_salary ?? calcNetSalary(row)), 0)
   const locale = i18n.language === 'en' ? 'en-US' : 'th-TH'
@@ -57,15 +88,18 @@ export default function PayrollPage() {
       <PageHeader
         title={t('nav.payroll')}
         subtitle={t('payroll.subtitle')}
-        action={canManage && (
-          <div className="flex items-center gap-2">
-            <input
-              type="month"
-              value={period}
-              onChange={e => setPeriod(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-xl text-sm"
-            />
-            <Button variant="secondary" onClick={load}>{t('common.refresh')}</Button>
+        action={(canManage || canExport) && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {canManage && (
+              <input
+                type="month"
+                value={period}
+                onChange={e => setPeriod(e.target.value)}
+                className="px-3 py-2 border border-slate-200 rounded-xl text-sm"
+              />
+            )}
+            {canExport && <Button variant="secondary" onClick={handleExport}>{payrollUi.exportPayroll}</Button>}
+            {canManage && <Button variant="secondary" onClick={load}>{t('common.refresh')}</Button>}
           </div>
         )}
       />
@@ -81,7 +115,17 @@ export default function PayrollPage() {
       <div className="flex gap-1 bg-white border border-slate-100 rounded-2xl p-1 mb-5 w-fit">
         <button onClick={() => setTab('my')} className={`px-4 py-2 rounded-xl text-sm font-medium ${tab === 'my' ? 'bg-primary-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>{t('payroll.myPayslips')}</button>
         {canManage && <button onClick={() => setTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium ${tab === 'all' ? 'bg-primary-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>{t('payroll.manage')}</button>}
+        {canImport && <button onClick={() => setTab('import')} className={`px-4 py-2 rounded-xl text-sm font-medium ${tab === 'import' ? 'bg-primary-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>{payrollUi.importTab}</button>}
       </div>
+
+      {tab === 'import' && canImport ? (
+        <PayrollImportPanel
+          companyId={employee.company_id}
+          employeeId={employee.id}
+          onImported={handleImported}
+          toast={toast}
+        />
+      ) : (
 
       <Card padding={false}>
         <Table
@@ -116,6 +160,11 @@ export default function PayrollPage() {
                     <button onClick={() => togglePublish(row)} className="text-xs text-primary-600 hover:text-primary-800 font-semibold">
                       {row.is_published ? t('common.hide') : t('common.publish')}
                     </button>
+                    {canManage && (
+                      <button onClick={() => exportSinglePayslip({ ...row, net_salary: net })} className="ml-3 text-xs text-emerald-600 hover:text-emerald-800 font-semibold">
+                        {payrollUi.generatePayslip}
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>
@@ -123,6 +172,7 @@ export default function PayrollPage() {
           })}
         </Table>
       </Card>
+      )}
     </>
   )
 }

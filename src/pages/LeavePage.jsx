@@ -11,6 +11,7 @@ import {
   Modal, ConfirmDialog, EmptyState, useToast, Skeleton, Table
 } from '@/components/ui/index.jsx'
 import { choose, localeOf } from '@/utils/lang'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 const STATUS_COLOR = { pending: 'amber', approved: 'green', rejected: 'red', cancelled: 'gray' }
 const STATUS_LABEL = {
@@ -31,8 +32,9 @@ export default function LeavePage() {
   const { show: toast, el: ToastEl } = useToast()
 
   const isManager = can('leave.approve_team') || can('leave.approve_all')
+  const canApproveAll = can('leave.approve_all')
 
-  const [tab, setTab] = useState('my')
+  const [tab, setTab] = usePersistedState('ap_leave_tab', 'my')
   const [leaveTypes, setLeaveTypes] = useState([])
   const [myLeaves, setMyLeaves] = useState([])
   const [allLeaves, setAllLeaves] = useState([])
@@ -41,7 +43,7 @@ export default function LeavePage() {
   const [rejectModal, setRejectModal] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
   const [saving, setSaving] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('pending')
+  const [statusFilter, setStatusFilter] = usePersistedState('ap_leave_status_filter', 'pending')
 
   const [form, setForm] = useState({
     leave_type_id: '', start_date: '', end_date: '', reason: '',
@@ -59,7 +61,7 @@ export default function LeavePage() {
       const [types, mine, all] = await Promise.all([
         getLeaveTypes(employee.company_id),
         getMyLeaves(employee.id),
-        isManager ? getAllLeaves(employee.company_id) : Promise.resolve([]),
+        isManager ? getAllLeaves(employee.company_id, canApproveAll ? {} : { branch_id: employee.branch_id }) : Promise.resolve([]),
       ])
       setLeaveTypes(types)
       setMyLeaves(mine)

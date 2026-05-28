@@ -8,6 +8,7 @@ import {
   Modal, ConfirmDialog, EmptyState, SearchInput, Toggle, useToast, Skeleton
 } from '@/components/ui/index.jsx'
 import { choose, fieldName } from '@/utils/lang'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 const EMPTY_FORM = { name: '', name_en: '', code: '', branch_id: '', parent_id: '', is_active: true }
 
@@ -18,7 +19,7 @@ export default function DepartmentsPage() {
   const [depts, setDepts] = useState([])
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = usePersistedState('ap_departments_search', '')
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [deleteId, setDeleteId] = useState(null)

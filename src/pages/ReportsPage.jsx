@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { downloadCsv, getReportSnapshot, toCsv } from '@/services/reportService'
 import { Badge, Button, Card, EmptyState, PageHeader, Skeleton, Table, useToast } from '@/components/ui/index.jsx'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 export default function ReportsPage() {
   const { t } = useTranslation()
   const { employee } = useAuthStore()
   const { show: toast, el: ToastEl } = useToast()
-  const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7))
+  const [period, setPeriod] = usePersistedState('ap_reports_period', new Date().toISOString().slice(0, 7))
   const [snapshot, setSnapshot] = useState(null)
   const [loading, setLoading] = useState(true)
 

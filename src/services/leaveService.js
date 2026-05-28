@@ -1,10 +1,12 @@
 // src/services/leaveService.js
 import { supabase } from './supabase'
+import { createApprovalRequest } from '@/features/approvals/services/approvalService'
+import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
 
 const SELECT_LEAVE = `
   *,
   employees!leave_requests_employee_id_fkey(
-    id, first_name, last_name, employee_code, avatar_url,
+    id, first_name, last_name, employee_code, avatar_url, branch_id, department_id, position_id,
     departments(name), positions(name), branches(name)
   ),
   leave_types(id, name, name_en, color),
@@ -47,7 +49,9 @@ export const getAllLeaves = async (companyId, filters = {}) => {
 
   const { data, error } = await query
   if (error) throw error
-  return data || []
+  let rows = data || []
+  if (filters.branch_id) rows = rows.filter(row => row.employees?.branch_id === filters.branch_id)
+  return rows
 }
 
 // ── Submit Leave ──────────────────────────────────────────────────
@@ -62,6 +66,12 @@ export const submitLeave = async (payload) => {
     .select(SELECT_LEAVE)
     .single()
   if (error) throw error
+  await createApprovalRequest({
+    company_id: data.company_id,
+    request_type: 'leave_request',
+    request_id: data.id,
+    requester_employee_id: data.employee_id,
+  })
   return data
 }
 
@@ -74,6 +84,14 @@ export const approveLeave = async (id, approverId) => {
     .select(SELECT_LEAVE)
     .single()
   if (error) throw error
+  await writeActivityLog({
+    company_id: data.company_id,
+    actor_employee_id: approverId,
+    action: 'approve_request',
+    target_type: 'leave_request',
+    target_id: id,
+    description: 'Leave request approved',
+  })
   return data
 }
 
@@ -86,6 +104,15 @@ export const rejectLeave = async (id, approverId, reason) => {
     .select(SELECT_LEAVE)
     .single()
   if (error) throw error
+  await writeActivityLog({
+    company_id: data.company_id,
+    actor_employee_id: approverId,
+    action: 'reject_request',
+    target_type: 'leave_request',
+    target_id: id,
+    description: 'Leave request rejected',
+    metadata: { reason },
+  })
   return data
 }
 

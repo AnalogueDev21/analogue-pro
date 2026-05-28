@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 const SELECT_PAYSLIP = `
   *,
-  employees(id, first_name, last_name, employee_code, avatar_url, departments(name), positions(name))
+  employees(id, first_name, last_name, employee_code, avatar_url, branch_id, departments(name), positions(name))
 `
 
 export const getMyPayslips = async (employeeId) => {
@@ -15,7 +15,7 @@ export const getMyPayslips = async (employeeId) => {
   return data || []
 }
 
-export const getCompanyPayslips = async (companyId, periodMonth) => {
+export const getCompanyPayslips = async (companyId, periodMonth, filters = {}) => {
   let query = supabase
     .from('payslips')
     .select(SELECT_PAYSLIP)
@@ -26,7 +26,9 @@ export const getCompanyPayslips = async (companyId, periodMonth) => {
 
   const { data, error } = await query
   if (error) throw error
-  return data || []
+  let rows = data || []
+  if (filters.branch_id) rows = rows.filter(row => row.employees?.branch_id === filters.branch_id)
+  return rows
 }
 
 export const publishPayslip = async (id, isPublished) => {
@@ -45,4 +47,3 @@ export const calcNetSalary = (row) => {
   const deductions = Number(row.deduction || 0) + Number(row.tax || 0) + Number(row.social_security || 0)
   return gross - deductions
 }
-

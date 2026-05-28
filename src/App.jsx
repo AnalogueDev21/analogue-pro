@@ -17,6 +17,7 @@ import AttendancePage from '@/pages/AttendancePage'
 import LeavePage from '@/pages/LeavePage'
 import OTPage from '@/pages/OTPage'
 import PayrollPage from '@/pages/PayrollPage'
+import ApprovalsPage from '@/pages/ApprovalsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import ActivityLogsPage from '@/pages/ActivityLogsPage'
 import SettingsPage from '@/pages/SettingsPage'
@@ -64,6 +65,8 @@ export default function App() {
       case 'leave':           return <LeavePage />
       case 'ot':              return <OTPage />
       case 'payroll':         return <PayrollPage />
+      case 'payroll-import':  return <PayrollPage initialTab="import" />
+      case 'approvals':       return <ApprovalsPage />
       case 'reports':         return <ReportsPage />
       case 'activity-logs':   return <ActivityLogsPage />
       case 'settings':        return <SettingsPage />

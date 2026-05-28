@@ -6,6 +6,7 @@ import { supabase } from '@/services/supabase'
 import { getEmployee, getSubordinates } from '@/services/employeeService'
 import { Card, Button, Badge, StatusBadge, useToast, Skeleton } from '@/components/ui/index.jsx'
 import { choose, fieldName, localeOf } from '@/utils/lang'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 const TABS = [
   { id: 'profile',   label: ['โปรไฟล์', 'Profile'], icon: '👤' },
@@ -22,7 +23,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
   const [emp, setEmp] = useState(null)
   const [subordinates, setSubordinates] = useState([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('profile')
+  const [tab, setTab] = usePersistedState('ap_employee_detail_tab', 'profile')
   const locale = localeOf(i18n)
 
   useEffect(() => { load() }, [employeeId])

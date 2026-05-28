@@ -4,11 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { supabase } from '@/services/supabase'
 import { getEmployees, generateEmployeeCode } from '@/services/employeeService'
+import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
+import { createNotification, NOTIFICATION_TYPES } from '@/features/notifications/services/notificationService'
 import { Button, ConfirmDialog, EmptyState, PageHeader, SearchInput, Skeleton, useToast } from '@/components/ui/index.jsx'
 import EmployeeCard from '@/components/employees/EmployeeCard'
 import EmployeeTable from '@/components/employees/EmployeeTable'
 import EmployeeForm from '@/components/employees/EmployeeForm'
 import { choose } from '@/utils/lang'
+import { usePersistedState } from '@/hooks/usePersistedState'
 
 const STATUSES = ['active', 'inactive', 'probation', 'on_leave', 'terminated']
 const EMPTY_FORM = {
@@ -28,6 +31,7 @@ export default function EmployeesPage({ onViewDetail }) {
   const canViewTeam = can('employee.view_team')
   const canViewSelf = can('employee.view_self')
   const canManage = can('employee.create')
+  const canViewCompanyWide = can('org.manage_company')
 
   const [employees, setEmployees] = useState([])
   const [branches, setBranches] = useState([])
@@ -35,9 +39,9 @@ export default function EmployeesPage({ onViewDetail }) {
   const [positions, setPositions] = useState([])
   const [roles, setRoles] = useState([])
   const [loading, setLoading] = useState(true)
-  const [view, setView] = useState('grid')
-  const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({ status: '', branch_id: '', department_id: '' })
+  const [view, setView] = usePersistedState('ap_employees_view', 'grid')
+  const [search, setSearch] = usePersistedState('ap_employees_search', '')
+  const [filters, setFilters] = usePersistedState('ap_employees_filters', { status: '', branch_id: '', department_id: '' })
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -51,7 +55,7 @@ export default function EmployeesPage({ onViewDetail }) {
     setLoading(true)
     try {
       const loadEmps = async () => {
-        if (canViewAll) return getEmployees(company.id)
+        if (canViewAll) return getEmployees(company.id, canViewCompanyWide ? {} : { branch_id: employee.branch_id })
         if (canViewTeam) {
           const [team, self] = await Promise.all([
             getEmployees(company.id, { manager_id: employee.id }),
@@ -131,11 +135,35 @@ export default function EmployeesPage({ onViewDetail }) {
         const { data, error } = await supabase.from('employees').update(payload).eq('id', editItem.id).select(sel).single()
         if (error) throw error
         setEmployees(p => p.map(x => x.id === data.id ? data : x))
+        await writeActivityLog({
+          company_id: company.id,
+          actor_employee_id: employee.id,
+          action: 'update_employee',
+          target_type: 'employee',
+          target_id: data.id,
+          description: `Updated employee ${data.employee_code}`,
+        })
+        await createNotification({
+          company_id: company.id,
+          employee_id: data.id,
+          title: 'Employee profile updated',
+          message: 'Your employee profile was updated.',
+          type: NOTIFICATION_TYPES.employee_updated,
+          link: 'employees',
+        })
         toast(choose(i18n, 'แก้ไขสำเร็จ ✓', 'Updated ✓'))
       } else {
         const { data, error } = await supabase.from('employees').insert(payload).select(sel).single()
         if (error) throw error
         setEmployees(p => [...p, data])
+        await writeActivityLog({
+          company_id: company.id,
+          actor_employee_id: employee.id,
+          action: 'create_employee',
+          target_type: 'employee',
+          target_id: data.id,
+          description: `Created employee ${data.employee_code}`,
+        })
         toast(choose(i18n, 'เพิ่มพนักงานสำเร็จ ✓', 'Employee added ✓'))
       }
       setShowForm(false)
@@ -151,6 +179,14 @@ export default function EmployeesPage({ onViewDetail }) {
       const { data, error } = await supabase.from('employees').update({ status: confirmAction.newStatus }).eq('id', confirmAction.id).select(sel).single()
       if (error) throw error
       setEmployees(p => p.map(x => x.id === data.id ? data : x))
+      await writeActivityLog({
+        company_id: company.id,
+        actor_employee_id: employee.id,
+        action: confirmAction.newStatus === 'inactive' ? 'suspend_employee' : 'update_employee',
+        target_type: 'employee',
+        target_id: data.id,
+        description: `Employee status changed to ${confirmAction.newStatus}`,
+      })
       toast(choose(i18n, 'อัปเดตสถานะสำเร็จ ✓', 'Status updated ✓'))
       setConfirmAction(null)
     } catch (e) { toast(e.message, 'error') }

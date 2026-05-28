@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { usePermission } from '@/core/rbac/PermissionGate'
-import { getNotifications, markAllNotificationsRead, markNotificationRead } from '@/services/notificationService'
+import { NotificationCenter } from '@/features/notifications'
 import { fieldName } from '@/utils/lang'
 
 const NAV = [
@@ -36,6 +36,8 @@ const NAV = [
       { id: 'attendance', icon: '🕐', labelKey: 'nav.attendance' },
       { id: 'leave',      icon: '📅', labelKey: 'nav.leave'      },
       { id: 'ot',         icon: '⏱',  labelKey: 'nav.ot'         },
+      { id: 'approvals',  icon: '✓',  labelKey: 'nav.approvals',
+        perms: ['approval.view','approval.manage'] },
     ],
   },
   {
@@ -43,13 +45,16 @@ const NAV = [
     items: [
       { id: 'payroll', icon: '💰', labelKey: 'nav.payroll',
         perms: ['payroll.view_self','payroll.view_all'] },
+      { id: 'payroll-import', icon: '📥', labelKey: 'nav.payrollImport',
+        perms: ['payroll.import','payroll.manage'] },
     ],
   },
   {
     group: 'nav.reports',
     items: [
       { id: 'reports', icon: '📊', labelKey: 'nav.reports', perm: 'report.view' },
-      { id: 'activity-logs', icon: '🧾', labelKey: 'nav.activityLogs', perm: 'report.view' },
+      { id: 'activity-logs', icon: '🧾', labelKey: 'nav.activityLogs',
+        perms: ['activity.view','activity.export'] },
     ],
   },
 ]
@@ -60,26 +65,20 @@ export default function AppShell({ page, setPage, children }) {
   const { can, canAny } = usePermission()
   const [sideOpen, setSideOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
-  const [notifications, setNotifications] = useState([])
+  const [theme, setTheme] = useState(() => localStorage.getItem('ap_theme') || 'light')
 
   useEffect(() => {
-    let mounted = true
-    const loadNotifications = async () => {
-      if (!employee?.id) return
-      const list = await getNotifications(employee.id)
-      if (mounted) setNotifications(list)
-    }
-    loadNotifications()
-    const timer = setInterval(loadNotifications, 60000)
-    return () => { mounted = false; clearInterval(timer) }
-  }, [employee?.id])
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    localStorage.setItem('ap_theme', theme)
+  }, [theme])
 
   const toggleLang = () => {
     const next = i18n.language === 'th' ? 'en' : 'th'
     localStorage.setItem('ap_lang', next)
     i18n.changeLanguage(next)
   }
+
+  const toggleTheme = () => setTheme(p => p === 'dark' ? 'light' : 'dark')
 
   const canSee = (item) => {
     if (!item.perm && !item.perms) return true
@@ -105,17 +104,8 @@ export default function AppShell({ page, setPage, children }) {
     </button>
   )
 
-  const unreadCount = notifications.filter(n => !n.read_at).length
-
-  const openNotifications = async () => {
-    setNotifOpen(p => !p)
-    if (!notifOpen && unreadCount > 0) {
-      try {
-        await markAllNotificationsRead(employee.id)
-        setNotifications(p => p.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() })))
-      } catch {}
-    }
-  }
+  const specialPageLabels = { 'payroll-import': 'nav.payrollImport', approvals: 'nav.approvals', 'activity-logs': 'nav.activityLogs' }
+  const pageLabelKey = specialPageLabels[page] || `nav.${page}`
 
   const Sidebar = () => (
     <aside className="w-64 flex-shrink-0 h-full flex flex-col bg-white border-r border-slate-100 overflow-hidden">
@@ -212,56 +202,36 @@ export default function AppShell({ page, setPage, children }) {
 
           {/* Breadcrumb */}
           <div className="flex-1">
-            <p className="text-sm font-semibold text-slate-700 capitalize">{t(`nav.${page}`, page)}</p>
+            <p className="text-sm font-semibold text-slate-700 capitalize">{t(pageLabelKey, page)}</p>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <button onClick={openNotifications} className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-lg">
-              🔔
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 font-bold">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
+            <button
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+              title={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+              className="w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-base flex items-center justify-center"
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
             </button>
+            <button
+              onClick={toggleLang}
+              aria-label={t('common.language')}
+              title={t('common.language')}
+              className="h-9 px-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors text-xs font-bold flex items-center gap-1.5"
+            >
+              <span>🌐</span>
+              {i18n.language === 'th' ? 'TH' : 'EN'}
+            </button>
+            {can('notification.view') && (
+              <NotificationCenter employee={employee} can={can} onNavigate={setPage} />
+            )}
             <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-xs font-bold cursor-pointer">
               {employee?.first_name?.[0]}
             </div>
           </div>
         </header>
-
-        {notifOpen && (
-          <div className="fixed right-4 top-16 z-40 w-[min(360px,calc(100vw-2rem))] bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <p className="font-semibold text-slate-800">Notifications</p>
-              <button onClick={() => setNotifOpen(false)} className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100">×</button>
-            </div>
-            <div className="max-h-96 overflow-y-auto">
-              {notifications.length === 0
-              ? <div className="py-10 text-center text-sm text-slate-400">{t('common.noNotifications')}</div>
-                : notifications.map(n => (
-                    <button
-                      key={n.id}
-                      onClick={async () => {
-                        try { await markNotificationRead(n.id) } catch {}
-                        setNotifications(p => p.map(x => x.id === n.id ? { ...x, read_at: x.read_at || new Date().toISOString() } : x))
-                      }}
-                      className="w-full text-left px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${n.read_at ? 'bg-slate-200' : 'bg-primary-600'}`} />
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-800 truncate">{n.title || t('common.notification')}</p>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message || n.body || '—'}</p>
-                          <p className="text-xs text-slate-300 mt-1">{n.created_at ? new Date(n.created_at).toLocaleString('th-TH') : ''}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-            </div>
-          </div>
-        )}
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-5 lg:p-6 pb-20 lg:pb-6 animate-fade-in">

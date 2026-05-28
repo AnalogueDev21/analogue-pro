@@ -1,10 +1,12 @@
 // src/services/otService.js
 import { supabase } from './supabase'
+import { createApprovalRequest } from '@/features/approvals/services/approvalService'
+import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
 
 const SELECT_OT = `
   *,
   employees!ot_requests_employee_id_fkey(
-    id, first_name, last_name, employee_code, avatar_url,
+    id, first_name, last_name, employee_code, avatar_url, branch_id, department_id, position_id,
     departments(name), positions(name), branches(name)
   ),
   approver:employees!ot_requests_approved_by_fkey(id, first_name, last_name)
@@ -34,7 +36,9 @@ export const getAllOT = async (companyId, filters = {}) => {
 
   const { data, error } = await query
   if (error) throw error
-  return data || []
+  let rows = data || []
+  if (filters.branch_id) rows = rows.filter(row => row.employees?.branch_id === filters.branch_id)
+  return rows
 }
 
 // ── Submit OT ─────────────────────────────────────────────────────
@@ -45,6 +49,12 @@ export const submitOT = async (payload) => {
     .select(SELECT_OT)
     .single()
   if (error) throw error
+  await createApprovalRequest({
+    company_id: data.company_id,
+    request_type: 'ot_request',
+    request_id: data.id,
+    requester_employee_id: data.employee_id,
+  })
   return data
 }
 
@@ -57,6 +67,14 @@ export const approveOT = async (id, approverId) => {
     .select(SELECT_OT)
     .single()
   if (error) throw error
+  await writeActivityLog({
+    company_id: data.company_id,
+    actor_employee_id: approverId,
+    action: 'approve_request',
+    target_type: 'ot_request',
+    target_id: id,
+    description: 'OT request approved',
+  })
   return data
 }
 
@@ -69,6 +87,15 @@ export const rejectOT = async (id, approverId, reason) => {
     .select(SELECT_OT)
     .single()
   if (error) throw error
+  await writeActivityLog({
+    company_id: data.company_id,
+    actor_employee_id: approverId,
+    action: 'reject_request',
+    target_type: 'ot_request',
+    target_id: id,
+    description: 'OT request rejected',
+    metadata: { reason },
+  })
   return data
 }
 

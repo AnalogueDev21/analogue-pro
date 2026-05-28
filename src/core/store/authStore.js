@@ -1,6 +1,7 @@
 // src/core/store/authStore.js
 import { create } from 'zustand'
 import { supabase } from '@/services/supabase'
+import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
 import i18n from '@/locales/i18n'
 
 export const useAuthStore = create((set, get) => ({
@@ -65,6 +66,14 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         screen: emp.pin_set ? 'pin' : 'pin-setup',
       })
+      await writeActivityLog({
+        company_id: emp.company_id,
+        actor_employee_id: emp.id,
+        action: 'login',
+        target_type: 'auth',
+        target_id: emp.id,
+        description: 'User session restored or signed in',
+      })
     } catch (e) {
       console.error(e)
       set({ loading: false, screen: 'login' })
@@ -92,6 +101,17 @@ export const useAuthStore = create((set, get) => ({
   },
 
   logout: async () => {
+    const { employee } = get()
+    if (employee) {
+      await writeActivityLog({
+        company_id: employee.company_id,
+        actor_employee_id: employee.id,
+        action: 'logout',
+        target_type: 'auth',
+        target_id: employee.id,
+        description: 'User signed out',
+      })
+    }
     await supabase.auth.signOut()
     set({
       user: null, employee: null, company: null,
