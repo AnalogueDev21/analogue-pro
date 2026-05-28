@@ -116,7 +116,7 @@ export default function OTPage() {
       />
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3 mb-5">
         {[
           { label: choose(i18n, 'OT รวม (อนุมัติ)', 'Total OT (Approved)'), value: `${approvedHours} ${choose(i18n,'ชม.','hrs')}`, color: 'text-primary-700', bg: 'bg-primary-50' },
           { label: choose(i18n, 'รออนุมัติ', 'Pending'), value: myOT.filter(o => o.status === 'pending').length, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -201,7 +201,7 @@ export default function OTPage() {
             <Field label={t('ot.date')} required error={errors.date}>
               <Input type="date" value={form.date} onChange={e => handleDateChange(e.target.value)} error={errors.date} />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label={t('ot.startTime')} required>
                 <Input type="time" value={form.start_time} onChange={e => setForm(p => ({ ...p, start_time: e.target.value }))} />
               </Field>

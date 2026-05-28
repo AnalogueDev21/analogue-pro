@@ -28,6 +28,42 @@ export function useToast() {
   return { show, el }
 }
 
+export function MobilePageContainer({ children, className = '' }) {
+  return <div className={`px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 ${className}`}>{children}</div>
+}
+
+export function MobileCard({ children, className = '', padding = true }) {
+  return (
+    <div className={`bg-white rounded-2xl border border-slate-100 shadow-sm ${padding ? 'p-4 md:p-6' : ''} ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+export function MobileHeader({ title, subtitle, action, className = '' }) {
+  return (
+    <div className={`flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4 md:mb-6 ${className}`}>
+      <div className="min-w-0">
+        <h1 className="text-2xl font-bold text-slate-900 leading-tight">{title}</h1>
+        {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+      </div>
+      {action && <div className="flex-shrink-0 w-full sm:w-auto flex justify-start sm:justify-end">{action}</div>}
+    </div>
+  )
+}
+
+export function MobileModal({ children, className = '' }) {
+  return (
+    <div className={`w-[calc(100vw-24px)] max-w-md max-h-[85dvh] overflow-y-auto rounded-2xl bg-white shadow-xl ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+export function MobileFormGrid({ children, className = '' }) {
+  return <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 ${className}`}>{children}</div>
+}
+
 // ── Modal ──────────────────────────────────────────────────────────
 export function Modal({ title, onClose, children, size = 'md' }) {
   useEffect(() => {
@@ -35,16 +71,16 @@ export function Modal({ title, onClose, children, size = 'md' }) {
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }
+  const sizes = { sm: 'sm:max-w-md', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl', xl: 'sm:max-w-4xl' }
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 sm:p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={`w-full ${sizes[size]} bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in max-h-[92vh] flex flex-col`}>
+      <div className={`w-[calc(100vw-24px)] ${sizes[size]} bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in max-h-[85dvh] flex flex-col`}>
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 flex-shrink-0">
-          <h3 className="font-semibold text-slate-800">{title}</h3>
+          <h3 className="font-semibold text-lg text-slate-800">{title}</h3>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex items-center justify-center transition-colors text-lg">
+            className="w-9 h-9 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex items-center justify-center transition-colors text-lg">
             ×
           </button>
         </div>
@@ -66,13 +102,13 @@ export function Drawer({ title, onClose, children, size = 'md' }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end"
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={`w-full ${sizes[size]} bg-white h-full shadow-xl flex flex-col animate-slide-in`}>
+      <div className={`w-full ${sizes[size]} bg-white h-full max-h-dvh shadow-xl flex flex-col animate-slide-in`}>
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 flex-shrink-0">
           <h3 className="font-semibold text-slate-800">{title}</h3>
           <button onClick={onClose}
             className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 flex items-center justify-center text-lg">×</button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))]">{children}</div>
       </div>
     </div>
   )
@@ -82,8 +118,8 @@ export function Drawer({ title, onClose, children, size = 'md' }) {
 export function ConfirmDialog({ title, message, onConfirm, onCancel, danger }) {
   const { t } = useTranslation()
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-4 sm:p-6 animate-fade-in">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-[calc(100vw-24px)] max-w-sm max-h-[85dvh] overflow-y-auto p-4 sm:p-6 animate-fade-in">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4 ${danger ? 'bg-red-100' : 'bg-amber-100'}`}>
           {danger ? '🗑' : '⚠️'}
         </div>
@@ -125,7 +161,7 @@ export function Field({ label, error, required, children, hint }) {
 export function Input({ error, ...props }) {
   return (
     <input
-      className={`w-full px-3.5 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm bg-white text-slate-900 placeholder-slate-400
+      className={`w-full h-11 sm:h-12 md:h-11 px-3.5 border rounded-xl text-base md:text-sm bg-white text-slate-900 placeholder-slate-400
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all
         ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
       {...props}
@@ -138,7 +174,7 @@ export function Textarea({ error, rows = 3, ...props }) {
   return (
     <textarea
       rows={rows}
-      className={`w-full px-3.5 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm bg-white text-slate-900 placeholder-slate-400
+      className={`w-full min-h-28 px-3.5 py-3 border rounded-xl text-base md:text-sm bg-white text-slate-900 placeholder-slate-400
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none
         ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
       {...props}
@@ -150,7 +186,7 @@ export function Textarea({ error, rows = 3, ...props }) {
 export function Select({ error, children, ...props }) {
   return (
     <select
-      className={`w-full px-3.5 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm bg-white text-slate-900
+      className={`w-full h-11 sm:h-12 md:h-11 px-3.5 border rounded-xl text-base md:text-sm bg-white text-slate-900
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all
         ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
       {...props}
@@ -233,7 +269,7 @@ export function Table({ headers, children, loading, empty, mobileCards }) {
       </div>
     )}
     <div className={`overflow-x-auto ${mobileCards ? 'hidden md:block' : ''}`}>
-      <table className="w-full text-sm">
+      <table className="w-full min-w-max text-sm">
         <thead>
           <tr className="border-b border-slate-100">
             {headers.map((h, i) => (
@@ -264,15 +300,7 @@ export function Table({ headers, children, loading, empty, mobileCards }) {
 
 // ── Page Header ────────────────────────────────────────────────────
 export function PageHeader({ title, subtitle, action }) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-      <div className="min-w-0">
-        <h1 className="text-2xl sm:text-xl font-bold text-slate-900 sm:text-slate-800 leading-tight">{title}</h1>
-        {subtitle && <p className="text-sm sm:text-sm text-slate-500 mt-1 sm:mt-0.5">{subtitle}</p>}
-      </div>
-      {action && <div className="flex-shrink-0 w-full sm:w-auto flex justify-start sm:justify-end">{action}</div>}
-    </div>
-  )
+  return <MobileHeader title={title} subtitle={subtitle} action={action} />
 }
 
 // ── Button ─────────────────────────────────────────────────────────
@@ -284,9 +312,9 @@ export function Button({ children, variant = 'primary', size = 'md', loading, ic
     ghost:     'text-slate-600 hover:bg-slate-100',
   }
   const sizes = {
-    sm: 'px-3 py-2 text-xs min-h-10',
-    md: 'px-4 py-3 sm:py-2.5 text-sm min-h-11 sm:min-h-0',
-    lg: 'px-5 py-3 text-base min-h-12',
+    sm: 'px-3 text-xs h-10',
+    md: 'px-4 text-sm h-11 sm:h-12 md:h-11',
+    lg: 'px-5 text-base h-12',
   }
   return (
     <button
@@ -307,7 +335,7 @@ export function Button({ children, variant = 'primary', size = 'md', loading, ic
 // ── Card ───────────────────────────────────────────────────────────
 export function Card({ children, className = '', padding = true }) {
   return (
-    <div className={`bg-white rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm ${padding ? 'p-4 sm:p-6' : ''} ${className}`}>
+    <div className={`bg-white rounded-2xl border border-slate-100 shadow-sm ${padding ? 'p-4 md:p-6' : ''} ${className}`}>
       {children}
     </div>
   )
@@ -354,13 +382,13 @@ export function SearchInput({ value, onChange, placeholder }) {
   const { t } = useTranslation()
   return (
     <div className="relative">
-      <span className="absolute left-3.5 top-3 sm:top-2.5 text-slate-400 text-sm">🔍</span>
+      <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
       <input
         type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder || `${t('common.search')}...`}
-        className="w-full pl-9 pr-4 py-3 sm:py-2.5 border border-slate-200 rounded-xl text-base sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        className="w-full h-11 sm:h-12 md:h-11 pl-9 pr-4 border border-slate-200 rounded-xl text-base md:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
       />
     </div>
   )

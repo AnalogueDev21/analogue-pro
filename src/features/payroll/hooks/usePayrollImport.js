@@ -19,6 +19,14 @@ export function usePayrollImport({ companyId, employeeId, onImported }) {
 
   const loadFile = async (file) => {
     if (!file) return
+    if (!companyId) {
+      setError('Company context is missing')
+      return
+    }
+    if (!file.name.toLowerCase().endsWith('.xlsx')) {
+      setError('Only .xlsx files are supported')
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -37,6 +45,21 @@ export function usePayrollImport({ companyId, employeeId, onImported }) {
   }
 
   const confirm = async () => {
+    if (!companyId || !employeeId) {
+      const message = 'Company or employee context is missing'
+      setError(message)
+      throw new Error(message)
+    }
+    if (rows.length === 0) {
+      const message = 'Upload and preview a file before importing'
+      setError(message)
+      throw new Error(message)
+    }
+    if (stats.validRows === 0) {
+      const message = 'No valid rows to import'
+      setError(message)
+      throw new Error(message)
+    }
     setSaving(true)
     setError('')
     try {

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Badge, Button, Card, EmptyState, Table } from '@/components/ui/index.jsx'
+import { Badge, Button, Card, EmptyState, MobileListCard, Table } from '@/components/ui/index.jsx'
 import { usePayrollImport } from '../hooks/usePayrollImport'
 import { downloadPayrollTemplate } from '../utils/payrollExcel'
 
@@ -8,6 +8,8 @@ const money = (value) => Number(value || 0).toLocaleString('th-TH', { minimumFra
 
 export default function PayrollImportPanel({ companyId, employeeId, onImported, toast }) {
   const { i18n } = useTranslation()
+  const inputRef = useRef(null)
+  const importer = usePayrollImport({ companyId, employeeId, onImported })
   const isEn = i18n.language === 'en'
   const p = isEn ? {
     importTitle: 'Payroll Excel Import',
@@ -60,8 +62,6 @@ export default function PayrollImportPanel({ companyId, employeeId, onImported, 
     valid: 'ถูกต้อง',
     invalid: 'ผิด',
   }
-  const inputRef = useRef(null)
-  const importer = usePayrollImport({ companyId, employeeId, onImported })
 
   const handleFile = (event) => {
     const file = event.target.files?.[0]
@@ -84,14 +84,10 @@ export default function PayrollImportPanel({ companyId, employeeId, onImported, 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <p className="text-sm font-bold text-slate-800">{p.importTitle}</p>
-            <p className="text-sm text-slate-500 mt-1">
-              {p.importSubtitle}
-            </p>
-            <p className="text-xs text-slate-400 mt-2">
-              {p.importRequired}
-            </p>
+            <p className="text-sm text-slate-500 mt-1">{p.importSubtitle}</p>
+            <p className="text-xs text-slate-400 mt-2">{p.importRequired}</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="secondary" onClick={downloadPayrollTemplate}>{p.template}</Button>
             <Button onClick={() => inputRef.current?.click()} loading={importer.loading}>{p.uploadExcel}</Button>
             <input ref={inputRef} type="file" accept=".xlsx" className="hidden" onChange={handleFile} />
@@ -128,7 +124,7 @@ export default function PayrollImportPanel({ companyId, employeeId, onImported, 
                 <p className="font-semibold text-slate-800">{p.preview}: {importer.fileName}</p>
                 <p className="text-xs text-slate-400">{p.previewGuard}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button variant="secondary" onClick={importer.reset}>{p.clear}</Button>
                 <Button onClick={confirm} loading={importer.saving} disabled={importer.stats.validRows === 0}>
                   {p.confirmImport}
@@ -147,6 +143,26 @@ export default function PayrollImportPanel({ companyId, employeeId, onImported, 
                 { label: p.errors },
               ]}
               empty={importer.rows.length === 0 && <EmptyState title={p.noRows} />}
+              mobileCards={importer.rows.map(row => (
+                <MobileListCard
+                  key={row.row_number}
+                  title={`${p.row} ${row.row_number}: ${row.employee_code || '-'}`}
+                  subtitle={row.employee ? `${row.employee.first_name} ${row.employee.last_name}` : p.missingEmployees}
+                  meta={`${p.period}: ${row.pay_period || '-'}`}
+                  badge={<Badge color={row.is_valid ? 'green' : 'red'}>{row.is_valid ? p.valid : p.invalid}</Badge>}
+                >
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <span>{p.baseSalary}: {Number.isFinite(row.base_salary) ? money(row.base_salary) : '-'}</span>
+                    <span>{p.otHours}: {Number.isFinite(row.ot_hours) ? row.ot_hours : '-'}</span>
+                    <span className="col-span-2 text-red-600">{p.deduction}: {Number.isFinite(row.deduction) ? money(row.deduction) : '-'}</span>
+                  </div>
+                  {row.errors.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {row.errors.map(error => <Badge key={error} color="red">{error}</Badge>)}
+                    </div>
+                  )}
+                </MobileListCard>
+              ))}
             >
               {importer.rows.map(row => (
                 <tr key={row.row_number} className="border-b border-slate-50 align-top">

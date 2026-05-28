@@ -205,7 +205,7 @@ export default function LeavePage() {
                 ))}
               </Select>
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label={t('leave.startDate')} required error={errors.start_date}>
                 <Input type="date" value={form.start_date} onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))} error={errors.start_date} />
               </Field>

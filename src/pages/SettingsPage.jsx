@@ -24,6 +24,7 @@ export default function SettingsPage() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
     localStorage.setItem('ap_theme', theme)
+    window.dispatchEvent(new CustomEvent('ap-theme-change', { detail: { theme } }))
   }, [theme])
 
   useEffect(() => {
@@ -102,6 +103,7 @@ export default function SettingsPage() {
       inApp: 'In-app notifications',
       email: 'Email notifications',
       emailHint: 'Email delivery will be connected after SMTP/provider setup.',
+      inAppHint: 'Bell, approval, payroll, and employee events',
       version: 'App version',
       demoMode: 'Demo mode',
       role: 'Current role',
@@ -127,6 +129,7 @@ export default function SettingsPage() {
       inApp: 'แจ้งเตือนในแอป',
       email: 'แจ้งเตือนทางอีเมล',
       emailHint: 'จะเชื่อมต่ออีเมลหลังตั้งค่า SMTP/provider',
+      inAppHint: 'แจ้งเตือนคำขออนุมัติ เงินเดือน และข้อมูลพนักงาน',
       version: 'เวอร์ชันแอป',
       demoMode: 'โหมดเดโม',
       role: 'บทบาทปัจจุบัน',
@@ -215,7 +218,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 p-4">
               <div>
                 <p className="font-semibold text-slate-800 text-sm">{sectionText.inApp}</p>
-                <p className="text-xs text-slate-500">Bell, approval, payroll, employee events</p>
+                <p className="text-xs text-slate-500">{sectionText.inAppHint}</p>
               </div>
               <Toggle value={inAppNotifications} onChange={setInAppNotifications} />
             </div>

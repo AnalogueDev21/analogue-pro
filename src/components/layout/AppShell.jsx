@@ -59,6 +59,37 @@ const NAV = [
   },
 ]
 
+const BottomIcon = ({ type }) => {
+  const common = 'w-5 h-5'
+  const stroke = 'currentColor'
+  if (type === 'dashboard') return (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 5h7v6H4V5Zm9 0h7v4h-7V5ZM4 13h7v6H4v-6Zm9-2h7v8h-7v-8Z" stroke={stroke} strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  )
+  if (type === 'employees') return (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.3 0-6 1.8-6 4v2h12v-2c0-2.2-2.7-4-6-4Zm8-1a3 3 0 1 0 0-6m0 8c1.9.2 4 1.5 4 3.2V19h-4" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+  if (type === 'leave') return (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm3 9 2 2 4-5" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+  if (type === 'payroll') return (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 3h14M8 15h4m5 0h.01" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+  return (
+    <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" stroke={stroke} strokeWidth="1.8" />
+      <path d="M19 12a7.3 7.3 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 3.1a7 7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5a7.3 7.3 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 3.1h5l.3-3.1a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z" stroke={stroke} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function AppShell({ page, setPage, children }) {
   const { t, i18n } = useTranslation()
   const { employee, company, logout } = useAuthStore()
@@ -71,6 +102,12 @@ export default function AppShell({ page, setPage, children }) {
     document.documentElement.classList.toggle('dark', theme === 'dark')
     localStorage.setItem('ap_theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const handleThemeChange = (event) => setTheme(event.detail?.theme || localStorage.getItem('ap_theme') || 'light')
+    window.addEventListener('ap-theme-change', handleThemeChange)
+    return () => window.removeEventListener('ap-theme-change', handleThemeChange)
+  }, [])
 
   const toggleLang = () => {
     const next = i18n.language === 'th' ? 'en' : 'th'
@@ -175,7 +212,7 @@ export default function AppShell({ page, setPage, children }) {
   )
 
   return (
-    <div className="h-screen flex bg-slate-50 overflow-hidden">
+    <div className="h-dvh min-h-dvh flex bg-slate-50 overflow-hidden">
       {/* Mobile overlay */}
       {sideOpen && (
         <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={() => setSideOpen(false)} />
@@ -194,7 +231,7 @@ export default function AppShell({ page, setPage, children }) {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-14 bg-white border-b border-slate-100 flex items-center px-3 sm:px-4 gap-2 sm:gap-3 flex-shrink-0">
+        <header className="h-14 bg-white border-b border-slate-100 flex items-center px-4 sm:px-4 gap-2 sm:gap-3 flex-shrink-0">
           <button onClick={() => setSideOpen(true)}
             className="lg:hidden w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center">
             ☰
@@ -234,26 +271,26 @@ export default function AppShell({ page, setPage, children }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-8 animate-fade-in">
-          <div className="max-w-md md:max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto px-4 py-4 md:p-6 lg:p-8 pb-[calc(88px+env(safe-area-inset-bottom))] lg:pb-8 animate-fade-in">
+          <div className="w-full max-w-7xl mx-auto">
             {children}
           </div>
         </main>
 
         {/* Mobile bottom nav */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 flex z-20 shadow-lg pb-[env(safe-area-inset-bottom)]">
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 h-[calc(72px+env(safe-area-inset-bottom))] bg-white border-t border-slate-100 flex z-20 shadow-lg pb-[env(safe-area-inset-bottom)]">
           {[
-            { id:'dashboard', icon:'▦', key:'nav.dashboard' },
-            { id:'employees', icon:'👥', key:'nav.employees' },
-            { id:'leave',     icon:'📅', key:'nav.leave'     },
-            { id:'payroll',   icon:'💰', key:'nav.payroll'   },
-            { id:'settings',  icon:'⚙️', key:'common.settings'},
+            { id:'dashboard', icon:'dashboard', key:'nav.dashboard' },
+            { id:'employees', icon:'employees', key:'nav.employees' },
+            { id:'leave',     icon:'leave', key:'nav.leave'     },
+            { id:'payroll',   icon:'payroll', key:'nav.payroll'   },
+            { id:'settings',  icon:'settings', key:'common.settings'},
           ].map(item => (
             <button key={item.id} onClick={() => setPage(item.id)}
-              className={`relative flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+              className={`relative flex-1 h-[72px] flex flex-col items-center justify-center gap-1 transition-colors ${
                 page === item.id ? 'text-primary-700 bg-primary-50' : 'text-slate-400'
               }`}>
-              <span className="text-lg leading-none w-6 h-6 flex items-center justify-center">{item.icon}</span>
+              <span className="leading-none w-6 h-6 flex items-center justify-center"><BottomIcon type={item.icon} /></span>
               <span className="text-[11px] leading-tight font-semibold">{t(item.key)}</span>
               {page === item.id && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-700 rounded-full" />

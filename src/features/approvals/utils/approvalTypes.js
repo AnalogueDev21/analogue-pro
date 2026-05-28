@@ -12,6 +12,27 @@ export const REQUEST_TYPES = [
   { value: 'payroll', label: 'Payroll Approval' },
 ]
 
+export const requestTypeLabel = (type, language = 'en') => {
+  const labels = {
+    leave_request: { th: 'ใบลา', en: 'Leave request' },
+    ot_request: { th: 'คำขอ OT', en: 'OT request' },
+    employee_transfer: { th: 'โอนย้ายพนักงาน', en: 'Employee transfer' },
+    payroll: { th: 'อนุมัติเงินเดือน', en: 'Payroll approval' },
+  }
+  return labels[type]?.[language === 'th' ? 'th' : 'en'] || type?.replace(/_/g, ' ') || '-'
+}
+
+export const approvalStatusLabel = (status, language = 'en') => {
+  const labels = {
+    pending: { th: 'รออนุมัติ', en: 'Pending' },
+    approved: { th: 'อนุมัติแล้ว', en: 'Approved' },
+    rejected: { th: 'ไม่อนุมัติ', en: 'Rejected' },
+    cancelled: { th: 'ยกเลิก', en: 'Cancelled' },
+    all: { th: 'ทั้งหมด', en: 'All' },
+  }
+  return labels[status]?.[language === 'th' ? 'th' : 'en'] || status || '-'
+}
+
 export const REQUEST_TABLES = {
   leave_request: {
     table: 'leave_requests',
