@@ -72,7 +72,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
         ← {t('common.back')} / {t('employee.title')}
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5">
         {/* Left — Profile Card */}
         <div className="lg:col-span-1 space-y-4">
           <Card className="text-center">
@@ -158,7 +158,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
           {tab === 'profile' && (
             <Card>
               <p className="font-semibold text-slate-700 mb-4">{choose(i18n, 'ข้อมูลส่วนตัว', 'Personal Information')}</p>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                 {[
                   [choose(i18n, 'ชื่อ (ไทย)', 'Name (TH)'), `${emp.first_name} ${emp.last_name}`],
                   [choose(i18n, 'ชื่อ (EN)', 'Name (EN)'), `${emp.first_name_en || ''} ${emp.last_name_en || ''}`.trim() || '—'],
@@ -181,7 +181,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
           {tab === 'org' && (
             <Card>
               <p className="font-semibold text-slate-700 mb-4">{choose(i18n, 'ข้อมูลองค์กร', 'Organization')}</p>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                 {[
                   [t('nav.company'), fieldName(i18n, emp.companies)],
                   [t('employee.branch'), emp.branches ? `${fieldName(i18n, emp.branches)} (${emp.branches.code})` : '—'],
@@ -204,7 +204,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
           {tab === 'employment' && (
             <Card>
               <p className="font-semibold text-slate-700 mb-4">{choose(i18n, 'ข้อมูลการจ้างงาน', 'Employment')}</p>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                 {[
                   [t('employee.employmentType'), emp.employment_type ? t(`employee.types.${emp.employment_type}`) : '—'],
                   [t('employee.status'), emp.status ? t(`employee.statuses.${emp.status}`) : '—'],
@@ -244,7 +244,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
                             </p>
                           )}
                         </div>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                           {[
                             { label: t('employee.branch'), from: tr.from_branch?.name, to: tr.to_branch?.name },
                             { label: t('employee.department'), from: tr.from_department?.name, to: tr.to_department?.name },

@@ -24,7 +24,7 @@ const NAV = [
     ],
   },
   {
-    group: 'nav.organization',
+    group: 'nav.teams',
     items: [
       { id: 'teams', icon: 'T', labelKey: 'nav.teams', fallback: 'Teams', perms: ['team.view','team.manage'] },
     ],

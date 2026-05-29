@@ -166,7 +166,7 @@ export default function SalesPage() {
         title={choose(i18n, 'ยอดขาย', 'Sales Performance')}
         subtitle={new Date(month + '-01').toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
         action={
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap justify-start sm:justify-end">
             {canExport && (
               <Button variant="secondary" size="sm" icon="📥"
                 onClick={() => exportSalesReport(records, targets, month)}>
@@ -219,7 +219,7 @@ export default function SalesPage() {
           {tab === 'overview' && (
             <div className="space-y-5">
               {/* KPIs */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { label: choose(i18n, 'ยอดขายรวม', 'Total Sales'), value: `฿${fmtBaht(totalSales)}`, color: 'text-primary-700', bg: 'bg-primary-50' },
                   { label: choose(i18n, 'พนักงานที่รายงาน', 'Reported'), value: records.length, color: 'text-emerald-700', bg: 'bg-emerald-50' },

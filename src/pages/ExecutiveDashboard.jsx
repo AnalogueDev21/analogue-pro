@@ -105,20 +105,20 @@ export default function ExecutiveDashboard() {
       />
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <>
           {/* KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <KPICard icon="👥" label={choose(i18n,'พนักงานทั้งหมด','Total Employees')} value={stats.totalEmployees} sub={`${choose(i18n,'ใช้งาน','Active')}: ${stats.activeEmployees}`} color="blue" />
             <KPICard icon="💰" label={choose(i18n,'ยอดขายเดือนนี้','Monthly Sales')} value={`฿${fmtBaht(stats.totalSales)}`} color="green" />
             <KPICard icon="🕐" label={choose(i18n,'เช็กอินวันนี้','Checked In Today')} value={stats.checkedInToday} sub={choose(i18n,'คน','employees')} color="violet" />
             <KPICard icon="⚠️" label={choose(i18n,'รออนุมัติ','Pending Approvals')} value={stats.pendingApprovals} sub={`${choose(i18n,'ลา','Leave')}: ${stats.pendingLeave} · OT: ${stats.pendingOT}`} color="amber" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Branch Sales Comparison */}
             <Card>
               <p className="font-semibold text-slate-700 mb-4">{choose(i18n,'ยอดขายตามสาขา','Sales by Branch')}</p>

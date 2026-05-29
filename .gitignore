@@ -27,3 +27,7 @@ dist
 .env
 .env.local
 .vscode
+# Environment variables
+.env.production
+.env.*.local
+*.env

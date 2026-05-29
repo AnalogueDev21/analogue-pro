@@ -146,9 +146,9 @@ export default function RolesPage() {
         action={<Button icon="+" onClick={() => setShowAdd(true)}>{t('org.role.add')}</Button>}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Role List */}
-        <div className="space-y-2">
+        <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1 mb-3">
             Roles ({roles.length})
           </p>

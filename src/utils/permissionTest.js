@@ -1,70 +1,60 @@
 // src/utils/permissionTest.js
-// Usage: import { runPermissionTest } from '@/utils/permissionTest'
-// Call in browser console: runPermissionTest(useAuthStore.getState())
+// Run in browser console:
+// const { runPermissionTest } = await import('/src/utils/permissionTest.js')
+// runPermissionTest(window.__authStore?.getState())
 
-export const EXPECTED_PERMISSIONS = {
-  'super_admin': {
-    level: 100,
-    must_have: [
-      'employee.view_all', 'employee.create', 'employee.edit', 'employee.terminate',
-      'leave.approve_all', 'ot.approve_all', 'payroll.manage', 'payroll.import', 'payroll.export',
-      'org.manage_company', 'org.manage_branch', 'org.manage_dept', 'org.manage_role',
-      'approval.manage', 'activity.export', 'dashboard.executive', 'sales.manage',
-      'stock.manage', 'team.manage',
-    ],
-    must_not: [],
+export const ROLE_EXPECTATIONS = {
+  100: { // Super Admin
+    must: ['employee.view_all','employee.create','leave.approve_all','ot.approve_all',
+           'payroll.manage','org.manage_company','dashboard.executive','sales.manage','approval.manage'],
+    mustNot: [],
   },
-  'hr_manager': {
-    level: 60,
-    must_have: [
-      'employee.view_all', 'employee.create', 'employee.edit',
-      'leave.approve_all', 'ot.approve_all',
-      'payroll.view_all', 'payroll.manage', 'payroll.import',
-      'attendance.view_all',
-    ],
-    must_not: ['org.manage_company', 'dashboard.executive'],
+  80: { // Company Admin
+    must: ['employee.view_all','employee.create','leave.approve_all','payroll.manage','org.manage_branch'],
+    mustNot: [],
   },
-  'manager': {
-    level: 40,
-    must_have: [
-      'employee.view_team', 'leave.approve_team', 'ot.approve_team',
-      'report.view', 'team.manage',
-    ],
-    must_not: ['employee.view_all', 'payroll.manage', 'org.manage_company'],
+  60: { // HR Manager
+    must: ['employee.view_all','employee.create','leave.approve_all','ot.approve_all','payroll.manage'],
+    mustNot: ['org.manage_company','dashboard.executive'],
   },
-  'employee': {
-    level: 10,
-    must_have: [
-      'employee.view_self', 'employee.edit_self',
-      'leave.create', 'leave.view_self',
-      'ot.create', 'ot.view_self',
-      'payroll.view_self', 'attendance.view_self',
-    ],
-    must_not: ['employee.view_all', 'leave.approve_all', 'payroll.manage'],
+  50: { // Finance/HR Staff
+    must: ['payroll.view_all','payroll.manage','payroll.import'],
+    mustNot: ['org.manage_company'],
+  },
+  40: { // Manager
+    must: ['employee.view_team','leave.approve_team','ot.approve_team','team.manage'],
+    mustNot: ['employee.view_all','payroll.manage','org.manage_company'],
+  },
+  20: { // Supervisor
+    must: ['employee.view_team','leave.approve_team','ot.approve_team'],
+    mustNot: ['employee.view_all','payroll.manage'],
+  },
+  10: { // Employee
+    must: ['employee.view_self','leave.create','leave.view_self','ot.create','payroll.view_self','attendance.view_self'],
+    mustNot: ['employee.view_all','leave.approve_all','payroll.manage','org.manage_company'],
   },
 }
 
 export const runPermissionTest = (authState) => {
-  const { permissions, roleLevel } = authState
-  console.group('🔐 Permission Test')
-  console.log('Role Level:', roleLevel)
+  if (!authState) { console.error('No auth state provided'); return }
+  const { permissions = [], roleLevel = 0 } = authState
+  const cfg = ROLE_EXPECTATIONS[roleLevel]
+
+  console.group(`🔐 Permission Test — Level ${roleLevel}`)
   console.log('Total permissions:', permissions.length)
-  console.log('Permissions:', permissions)
+  console.table(permissions.map(p => ({ permission: p })))
 
-  // Find matching expected role
-  const roleName = Object.entries(EXPECTED_PERMISSIONS).find(
-    ([, cfg]) => cfg.level === roleLevel
-  )?.[0] || 'unknown'
+  if (!cfg) { console.warn('No expectation defined for level', roleLevel); console.groupEnd(); return }
 
-  if (roleName !== 'unknown') {
-    const cfg = EXPECTED_PERMISSIONS[roleName]
-    const missing = cfg.must_have.filter(p => !permissions.includes(p))
-    const unexpected = cfg.must_not.filter(p => permissions.includes(p))
+  const missing    = cfg.must.filter(p => !permissions.includes(p))
+  const unexpected = cfg.mustNot.filter(p => permissions.includes(p))
 
-    if (missing.length)     console.warn('❌ Missing permissions:', missing)
-    else                    console.log('✅ All required permissions present')
-    if (unexpected.length)  console.warn('⚠️ Unexpected permissions:', unexpected)
-    else                    console.log('✅ No unexpected permissions')
-  }
+  if (missing.length)     console.error('❌ Missing:', missing)
+  else                    console.log('✅ All required permissions present')
+
+  if (unexpected.length)  console.error('⚠️ Should NOT have:', unexpected)
+  else                    console.log('✅ No unexpected permissions')
+
   console.groupEnd()
+  return { missing, unexpected, ok: missing.length === 0 && unexpected.length === 0 }
 }

@@ -87,16 +87,8 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         screen: emp.pin_set ? 'pin' : 'pin-setup',
       })
-      // Log login
+      // Log login (fire-and-forget)
       logLogin(emp.company_id, emp.id).catch(() => {})
-      await writeActivityLog({
-        company_id: emp.company_id,
-        actor_employee_id: emp.id,
-        action: 'login',
-        target_type: 'auth',
-        target_id: emp.id,
-        description: 'User session restored or signed in',
-      })
     } catch (e) {
       console.error(e)
       set({ loading: false, screen: 'login' })
@@ -126,14 +118,8 @@ export const useAuthStore = create((set, get) => ({
   logout: async () => {
     const { employee } = get()
     if (employee) {
-      await writeActivityLog({
-        company_id: employee.company_id,
-        actor_employee_id: employee.id,
-        action: 'logout',
-        target_type: 'auth',
-        target_id: employee.id,
-        description: 'User signed out',
-      })
+      logLogout(employee.company_id, employee.id).catch(() => {})
+      // legacy writeActivityLog kept for compat if needed
     }
     await supabase.auth.signOut()
     set({

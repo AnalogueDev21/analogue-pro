@@ -4,6 +4,7 @@ export {
   addTeamMember,
   archiveTeam,
   createTeam,
+  deleteTeam,
   getEmployeeTeamMemberships,
   getTeam,
   getTeamPerformance,

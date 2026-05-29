@@ -89,9 +89,9 @@ export default function App() {
   if (screen === 'pin')       return <PinPage />
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary key={page}>
       <AppShell page={page} setPage={setPage}>
-        <ErrorBoundary>{renderPage()}</ErrorBoundary>
+        <ErrorBoundary key={page}>{renderPage()}</ErrorBoundary>
       </AppShell>
     </ErrorBoundary>
   )
