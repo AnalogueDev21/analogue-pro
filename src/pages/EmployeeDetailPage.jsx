@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/core/store/authStore'
 import { supabase } from '@/services/supabase'
 import { getEmployee, getSubordinates } from '@/services/employeeService'
+import { getEmployeeTeamMemberships } from '@/features/teams'
 import { Card, Button, Badge, StatusBadge, useToast, Skeleton } from '@/components/ui/index.jsx'
 import { choose, fieldName, localeOf } from '@/utils/lang'
 import { usePersistedState } from '@/hooks/usePersistedState'
@@ -22,6 +23,7 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
   const { show: toast, el: ToastEl } = useToast()
   const [emp, setEmp] = useState(null)
   const [subordinates, setSubordinates] = useState([])
+  const [teamMemberships, setTeamMemberships] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = usePersistedState('ap_employee_detail_tab', 'profile')
   const locale = localeOf(i18n)
@@ -35,8 +37,10 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
         getEmployee(employeeId),
         getSubordinates(employeeId),
       ])
+      const memberships = data?.company_id ? await getEmployeeTeamMemberships(data.company_id, employeeId) : []
       setEmp(data)
       setSubordinates(subs)
+      setTeamMemberships(memberships)
     } catch (e) { toast(e.message, 'error') }
     finally { setLoading(false) }
   }
@@ -266,6 +270,70 @@ export default function EmployeeDetailPage({ employeeId, onBack }) {
 
           {/* Team Tab */}
           {tab === 'team' && (
+            <div className="space-y-4">
+              <Card padding={false}>
+                <div className="px-5 py-4 border-b border-slate-100">
+                  <p className="font-semibold text-slate-700">Team Membership</p>
+                </div>
+                {!teamMemberships.length ? (
+                  <div className="py-12 text-center text-slate-400 text-sm">No team membership yet</div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {teamMemberships.map(member => {
+                      const team = member.teams
+                      return (
+                        <div key={member.id} className="px-5 py-4">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-semibold text-slate-800">{fieldName(i18n, team)}</p>
+                                <Badge color={member.is_active ? 'green' : 'gray'}>{member.is_active ? 'Active' : 'Ended'}</Badge>
+                                <Badge color={member.member_role === 'leader' ? 'blue' : 'gray'}>{member.member_role}</Badge>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1">
+                                {fieldName(i18n, team?.branches) || '-'} / {fieldName(i18n, team?.departments) || '-'}
+                              </p>
+                              <p className="text-xs text-slate-400 mt-1">{member.start_date || '-'} - {member.end_date || 'Present'}</p>
+                            </div>
+                            <div className="text-left sm:text-right">
+                              <p className="text-xs text-slate-400">Team Target</p>
+                              <p className="font-bold text-primary-700">{Number(team?.target_amount || 0).toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </Card>
+
+              <Card padding={false}>
+                <div className="px-5 py-4 border-b border-slate-100">
+                  <p className="font-semibold text-slate-700">Direct Reports ({subordinates.length})</p>
+                </div>
+                {!subordinates.length ? (
+                  <div className="py-12 text-center text-slate-400 text-sm">No direct reports</div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {subordinates.map(sub => (
+                      <div key={sub.id} className="px-5 py-3.5 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-sm font-bold flex-shrink-0">
+                          {sub.first_name?.[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-800 text-sm truncate">{sub.first_name} {sub.last_name}</p>
+                          <p className="text-xs text-slate-400 truncate">{sub.positions?.name || '-'} / {sub.employee_code}</p>
+                        </div>
+                        <StatusBadge status={sub.status} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+
+          {false && tab === 'team' && (
             <Card padding={false}>
               <div className="px-5 py-4 border-b border-slate-100">
                 <p className="font-semibold text-slate-700">{choose(i18n, 'ทีม', 'Team')} ({subordinates.length})</p>

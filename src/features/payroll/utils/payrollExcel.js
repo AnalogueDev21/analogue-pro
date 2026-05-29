@@ -110,3 +110,45 @@ export const exportSinglePayslip = (row) => {
   const employeeCode = row.employees?.employee_code || 'employee'
   return exportPayrollRows([row], `payslip-${employeeCode}-${row.period_month || 'period'}.xlsx`)
 }
+
+export const validatePayrollRows = (rows, employees) => {
+  const empMap = Object.fromEntries(
+    (employees || []).map(e => [String(e.employee_code || '').trim(), e])
+  )
+  const valid = []
+  const invalid = []
+  const seen = new Set()
+
+  rows.forEach((row, idx) => {
+    const errors = []
+    const code = String(row.employee_code || '').trim()
+    const period = String(row.pay_period || '').trim()
+    const base = row.base_salary
+
+    if (!code)                   errors.push('ไม่มีรหัสพนักงาน')
+    else if (!empMap[code])      errors.push(`ไม่พบรหัส: ${code}`)
+    if (!period)                 errors.push('ไม่มีรอบเดือน')
+    else if (!/^\d{4}-\d{2}$/.test(period)) errors.push('รูปแบบเดือนต้องเป็น YYYY-MM')
+    if (isNaN(base) || base < 0) errors.push('เงินเดือนไม่ถูกต้อง')
+    if (base > 10_000_000)       errors.push('เงินเดือนเกิน 10,000,000')
+    if (seen.has(`${code}|${period}`)) errors.push('ซ้ำกับแถวอื่นในไฟล์')
+
+    seen.add(`${code}|${period}`)
+
+    const emp = empMap[code]
+    const record = {
+      rowIndex: idx + 2,
+      employee_code: code,
+      employee_id: emp?.id || null,
+      employee_name: emp ? `${emp.first_name} ${emp.last_name}` : '—',
+      branch_id: emp?.branch_id || null,
+      ...row,
+      errors,
+      is_valid: errors.length === 0,
+    }
+    if (errors.length > 0) invalid.push(record)
+    else valid.push(record)
+  })
+
+  return { valid, invalid }
+}

@@ -24,6 +24,12 @@ const NAV = [
     ],
   },
   {
+    group: 'nav.organization',
+    items: [
+      { id: 'teams', icon: 'T', labelKey: 'nav.teams', fallback: 'Teams', perms: ['team.view','team.manage'] },
+    ],
+  },
+  {
     group: 'nav.employees',
     items: [
       { id: 'employees', icon: '👥', labelKey: 'nav.employees',
@@ -47,6 +53,15 @@ const NAV = [
         perms: ['payroll.view_self','payroll.view_all'] },
       { id: 'payroll-import', icon: '📥', labelKey: 'nav.payrollImport',
         perms: ['payroll.import','payroll.manage'] },
+    ],
+  },
+  {
+    group: 'Business OS',
+    items: [
+      { id: 'executive', icon: '📊', labelKey: 'nav.executive', fallback: 'Executive', perm: 'dashboard.executive' },
+      { id: 'sales',     icon: '💹', labelKey: 'nav.sales',     fallback: 'Sales',     perms: ['sales.view','sales.manage'] },
+      { id: 'inventory', icon: 'I', labelKey: 'nav.inventory', fallback: 'Inventory',
+        perms: ['stock.view','stock.manage','stock.request','stock.issue','stock.receive','stock.count','stock.adjust'] },
     ],
   },
   {
@@ -124,6 +139,14 @@ export default function AppShell({ page, setPage, children }) {
     return false
   }
 
+  const navLabel = (item) => {
+    if (item.id === 'teams') return i18n.language?.startsWith('th') ? 'ทีม' : 'Teams'
+    if (item.id === 'inventory') return i18n.language?.startsWith('th') ? 'คลังสินค้า' : 'Inventory'
+    if (item.id === 'executive') return i18n.language?.startsWith('th') ? 'Executive Dashboard' : 'Executive Dashboard'
+    if (item.id === 'sales') return i18n.language?.startsWith('th') ? 'ยอดขาย' : 'Sales'
+    return t(item.labelKey, item.fallback || item.labelKey)
+  }
+
   const NavItem = ({ item }) => (
     <button
       onClick={() => { setPage(item.id); setSideOpen(false) }}
@@ -136,12 +159,12 @@ export default function AppShell({ page, setPage, children }) {
       <span className={`text-base w-5 text-center flex-shrink-0 ${page === item.id ? 'text-primary-700' : 'text-slate-400'}`}>
         {item.icon}
       </span>
-      <span>{t(item.labelKey)}</span>
+      <span>{navLabel(item)}</span>
       {page === item.id && <div className="ml-auto w-1.5 h-1.5 bg-primary-700 rounded-full" />}
     </button>
   )
 
-  const specialPageLabels = { 'payroll-import': 'nav.payrollImport', approvals: 'nav.approvals', 'activity-logs': 'nav.activityLogs' }
+  const specialPageLabels = { 'payroll-import': 'nav.payrollImport', approvals: 'nav.approvals', 'activity-logs': 'nav.activityLogs', executive: 'nav.executive', sales: 'nav.sales' }
   const pageLabelKey = specialPageLabels[page] || `nav.${page}`
 
   const Sidebar = () => (

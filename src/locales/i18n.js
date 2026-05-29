@@ -655,6 +655,7 @@ const en = {
     newThisMonth: 'New This Month',
     onLeaveToday: 'On Leave Today',
     checkedInToday: 'Checked In Today',
+    newThisMonth: 'New This Month',
     recentActivity: 'Recent Activity',
     quickActions: 'Quick Actions',
   },

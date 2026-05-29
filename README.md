@@ -199,6 +199,8 @@ values (
 
 See [System Roadmap](docs/system-roadmap.md) for the next architecture and feature build plan.
 
+See [Business Operating System Roadmap](docs/business-operating-system-roadmap.md) for the Teams, Inventory, Sales Performance, and Executive Analytics expansion plan.
+
 ### ✅ Week 1 — Foundation (Done)
 - [x] Database Schema + RLS
 - [x] Auth + PIN Authentication

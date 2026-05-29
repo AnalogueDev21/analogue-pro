@@ -1,7 +1,7 @@
 // src/core/store/authStore.js
 import { create } from 'zustand'
 import { supabase } from '@/services/supabase'
-import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
+import { writeActivityLog, logLogin, logLogout } from '@/features/activityLogs/services/activityLogService'
 import { setEmployeePin, verifyEmployeePin } from '@/features/auth/services/pinService'
 import i18n from '@/locales/i18n'
 
@@ -87,6 +87,8 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         screen: emp.pin_set ? 'pin' : 'pin-setup',
       })
+      // Log login
+      logLogin(emp.company_id, emp.id).catch(() => {})
       await writeActivityLog({
         company_id: emp.company_id,
         actor_employee_id: emp.id,

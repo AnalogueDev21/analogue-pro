@@ -6,11 +6,12 @@ import { supabase } from '@/services/supabase'
 import { getEmployees, generateEmployeeCode } from '@/services/employeeService'
 import { writeActivityLog } from '@/features/activityLogs/services/activityLogService'
 import { createNotification, NOTIFICATION_TYPES } from '@/features/notifications/services/notificationService'
+import { getTeams } from '@/features/teams'
 import { Button, ConfirmDialog, EmptyState, PageHeader, SearchInput, Skeleton, useToast } from '@/components/ui/index.jsx'
 import EmployeeCard from '@/components/employees/EmployeeCard'
 import EmployeeTable from '@/components/employees/EmployeeTable'
 import EmployeeForm from '@/components/employees/EmployeeForm'
-import { choose } from '@/utils/lang'
+import { choose, fieldName } from '@/utils/lang'
 import { usePersistedState } from '@/hooks/usePersistedState'
 
 const STATUSES = ['active', 'inactive', 'probation', 'on_leave', 'terminated']
@@ -68,16 +69,18 @@ export default function EmployeesPage({ onViewDetail }) {
   const canViewSelf = can('employee.view_self')
   const canManage = can('employee.create')
   const canViewCompanyWide = can('org.manage_company')
+  const canViewTeams = can('team.view') || can('team.manage')
 
   const [employees, setEmployees] = useState([])
   const [branches, setBranches] = useState([])
   const [departments, setDepartments] = useState([])
   const [positions, setPositions] = useState([])
   const [roles, setRoles] = useState([])
+  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [view, setView] = usePersistedState('ap_employees_view', 'grid')
   const [search, setSearch] = usePersistedState('ap_employees_search', '')
-  const [filters, setFilters] = usePersistedState('ap_employees_filters', { status: '', branch_id: '', department_id: '' })
+  const [filters, setFilters] = usePersistedState('ap_employees_filters', { status: '', branch_id: '', department_id: '', team_id: '' })
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -102,14 +105,16 @@ export default function EmployeesPage({ onViewDetail }) {
         if (canViewSelf) return getEmployees(company.id, { employee_id: employee.id })
         return []
       }
-      const [emps, { data: br }, { data: dp }, { data: po }, { data: ro }] = await Promise.all([
+      const [emps, { data: br }, { data: dp }, { data: po }, { data: ro }, teamRows] = await Promise.all([
         loadEmps(),
         supabase.from('branches').select('id,name,name_en,code').eq('company_id', company.id).eq('is_active', true).order('code'),
         supabase.from('departments').select('id,name,name_en').eq('company_id', company.id).eq('is_active', true).order('name'),
         supabase.from('positions').select('id,name,name_en,level').eq('company_id', company.id).eq('is_active', true).order('level', { ascending: false }),
         supabase.from('roles').select('id,name,name_en,level').eq('company_id', company.id).order('level', { ascending: false }),
+        canViewTeams ? getTeams(company.id, { status: 'active' }) : [],
       ])
       setEmployees(emps); setBranches(br||[]); setDepartments(dp||[]); setPositions(po||[]); setRoles(ro||[])
+      setTeams(teamRows || [])
     } catch (e) { toast(e.message, 'error') }
     finally { setLoading(false) }
   }
@@ -120,6 +125,11 @@ export default function EmployeesPage({ onViewDetail }) {
     if (filters.status && e.status !== filters.status) return false
     if (filters.branch_id && e.branch_id !== filters.branch_id) return false
     if (filters.department_id && e.department_id !== filters.department_id) return false
+    if (filters.team_id) {
+      const team = teams.find(item => item.id === filters.team_id)
+      const inTeam = team?.team_members?.some(member => member.is_active && member.employee_id === e.id)
+      if (!inTeam) return false
+    }
     return true
   })
 
@@ -274,6 +284,13 @@ export default function EmployeesPage({ onViewDetail }) {
           <option value="">{choose(i18n, 'ทุกแผนก', 'All Departments')}</option>
           {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
+        {canViewTeams && (
+          <select value={filters.team_id || ''} onChange={e => setFilters(f => ({ ...f, team_id: e.target.value }))}
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+            <option value="">All Teams</option>
+            {teams.map(team => <option key={team.id} value={team.id}>{fieldName(i18n, team)}</option>)}
+          </select>
+        )}
         <div className="flex border border-slate-200 rounded-xl overflow-hidden">
           {['grid', 'table'].map(v => (
             <button key={v} onClick={() => setView(v)}

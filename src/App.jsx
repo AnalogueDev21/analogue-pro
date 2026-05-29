@@ -11,16 +11,21 @@ import BranchesPage from '@/pages/BranchesPage'
 import DepartmentsPage from '@/pages/DepartmentsPage'
 import PositionsPage from '@/pages/PositionsPage'
 import RolesPage from '@/pages/RolesPage'
+import TeamsPage from '@/pages/TeamsPage'
 import EmployeesPage from '@/pages/EmployeesPage'
 import EmployeeDetailPage from '@/pages/EmployeeDetailPage'
 import AttendancePage from '@/pages/AttendancePage'
 import LeavePage from '@/pages/LeavePage'
 import OTPage from '@/pages/OTPage'
 import PayrollPage from '@/pages/PayrollPage'
+import InventoryPage from '@/pages/InventoryPage'
+import SalesPage from '@/pages/SalesPage'
+import ExecutiveDashboard from '@/pages/ExecutiveDashboard'
 import ApprovalsPage from '@/pages/ApprovalsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import ActivityLogsPage from '@/pages/ActivityLogsPage'
 import SettingsPage from '@/pages/SettingsPage'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
 function LoadingScreen() {
   return (
@@ -53,24 +58,28 @@ export default function App() {
 
   const renderPage = () => {
     switch (page) {
-      case 'dashboard':       return <Dashboard />
-      case 'company':         return <CompanyPage />
-      case 'branches':        return <BranchesPage />
-      case 'departments':     return <DepartmentsPage />
-      case 'positions':       return <PositionsPage />
-      case 'roles':           return <RolesPage />
-      case 'employees':       return <EmployeesPage onViewDetail={handleViewEmployee} />
-      case 'employee-detail': return <EmployeeDetailPage employeeId={selectedEmployeeId} onBack={() => setPage('employees')} />
-      case 'attendance':      return <AttendancePage />
-      case 'leave':           return <LeavePage />
-      case 'ot':              return <OTPage />
-      case 'payroll':         return <PayrollPage />
-      case 'payroll-import':  return <PayrollPage initialTab="import" />
-      case 'approvals':       return <ApprovalsPage />
-      case 'reports':         return <ReportsPage />
-      case 'activity-logs':   return <ActivityLogsPage />
-      case 'settings':        return <SettingsPage />
-      default:                return <Dashboard />
+      case 'dashboard':        return <Dashboard />
+      case 'executive':        return <ExecutiveDashboard />
+      case 'company':          return <CompanyPage />
+      case 'branches':         return <BranchesPage />
+      case 'departments':      return <DepartmentsPage />
+      case 'teams':            return <TeamsPage />
+      case 'positions':        return <PositionsPage />
+      case 'roles':            return <RolesPage />
+      case 'employees':        return <EmployeesPage onViewDetail={handleViewEmployee} />
+      case 'employee-detail':  return <EmployeeDetailPage employeeId={selectedEmployeeId} onBack={() => setPage('employees')} />
+      case 'attendance':       return <AttendancePage />
+      case 'leave':            return <LeavePage />
+      case 'ot':               return <OTPage />
+      case 'payroll':          return <PayrollPage />
+      case 'payroll-import':   return <PayrollPage initialTab="import" />
+      case 'inventory':        return <InventoryPage />
+      case 'sales':            return <SalesPage />
+      case 'approvals':        return <ApprovalsPage />
+      case 'reports':          return <ReportsPage />
+      case 'activity-logs':    return <ActivityLogsPage />
+      case 'settings':         return <SettingsPage />
+      default:                 return <Dashboard />
     }
   }
 
@@ -80,8 +89,10 @@ export default function App() {
   if (screen === 'pin')       return <PinPage />
 
   return (
-    <AppShell page={page} setPage={setPage}>
-      {renderPage()}
-    </AppShell>
+    <ErrorBoundary>
+      <AppShell page={page} setPage={setPage}>
+        <ErrorBoundary>{renderPage()}</ErrorBoundary>
+      </AppShell>
+    </ErrorBoundary>
   )
 }
